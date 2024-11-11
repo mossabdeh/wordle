@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:wordle/constants/letterState.dart';
 import 'package:wordle/entities/letter.dart';
 import 'package:wordle/services/loadJson.dart';
-import 'components/Partiedialogue.dart';
 import 'constants/keyboard.dart';
 import 'constants/letterValue.dart';
 
@@ -15,12 +14,10 @@ class Observer extends ChangeNotifier {
   bool loading = true;
   bool hasWon = false;
   bool hasLost = false;
+  int maxAttempts;
+  int wordLength;
 
-  Observer() {
-    _setWinningWord();
-  }
-
-  /* methode to reset the game */
+  /* Method to reset the game */
   void resetGame() {
     currentNode = 0;
     currentRow = 0;
@@ -28,18 +25,24 @@ class Observer extends ChangeNotifier {
     hasWon = false;
     hasLost = false;
     loading = true;
-    // Fetch a new winning word and notify listeners when done
+
+    // Re-fetch a new winning word with the current wordLength setting
+    _setWinningWord();
+  }
+
+
+  Observer({required this.wordLength, required this.maxAttempts}) {
     _setWinningWord();
   }
 
   Future<void> _setWinningWord() async {
-    final word = await getRandomWord();
+    final word = await getRandomWord(wordLength: wordLength);
     if (word != null) {
       winningWord = word.toUpperCase();
       print("Winning word selected: $winningWord");
     } else {
       winningWord = "APPLE";
-      print("No 5-letter word found, using default: $winningWord.");
+      print("No $wordLength-letter word found, using default: $winningWord.");
     }
     loading = false;
     notifyListeners();
@@ -47,16 +50,16 @@ class Observer extends ChangeNotifier {
 
   void setKeyTapped({required String value}) {
     if (value == 'ENTER') {
-      if (currentNode == 5 * (currentRow + 1)) {
+      if (currentNode == wordLength * (currentRow + 1)) {
         _checkGuess();
       }
     } else if (value == 'DEL') {
-      if (currentNode > 5 * currentRow) {
+      if (currentNode > wordLength * currentRow) {
         currentNode--;
         letterTaped.removeLast();
       }
     } else {
-      if (currentNode < 5 * (currentRow + 1)) {
+      if (currentNode < wordLength * (currentRow + 1)) {
         letterTaped.add(Letter(char: value, status: LetterState.untouched));
         currentNode++;
       }
@@ -65,15 +68,17 @@ class Observer extends ChangeNotifier {
   }
 
   void _checkGuess() {
+    // Collect the guessed word for the current row
     final guessedWord = letterTaped
-        .skip(currentRow * 5)
-        .take(5)
+        .skip(currentRow * wordLength)
+        .take(wordLength)
         .map((letter) => letter.char)
         .join();
 
+    // Check if the guessed word matches the winning word
     if (guessedWord == winningWord) {
       for (int i = 0; i < guessedWord.length; i++) {
-        final index = currentRow * 5 + i;
+        final index = currentRow * wordLength + i;
         letterTaped[index].status = LetterState.correct;
         keyboardState[LetterValue.fromChar(guessedWord[i]) ?? LetterValue.A] = LetterState.correct;
       }
@@ -82,9 +87,10 @@ class Observer extends ChangeNotifier {
       return;
     }
 
+    // Update the colors for each letter based on the winning word
     for (int i = 0; i < guessedWord.length; i++) {
       final guessedLetter = guessedWord[i];
-      final index = currentRow * 5 + i;
+      final index = currentRow * wordLength + i;
 
       if (winningWord.contains(guessedLetter)) {
         letterTaped[index].status = guessedLetter == winningWord[i] ? LetterState.correct : LetterState.contains;
@@ -95,8 +101,9 @@ class Observer extends ChangeNotifier {
       }
     }
 
+    // Move to the next row and check for game over
     currentRow++;
-    if (currentRow >= 6) {
+    if (currentRow >= maxAttempts) {
       hasLost = true;
     }
     notifyListeners();
