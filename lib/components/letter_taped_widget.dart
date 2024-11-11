@@ -4,7 +4,7 @@ import 'package:wordle/Observer.dart';
 import '../constants/letterState.dart';
 
 class LetterTapedWidget extends StatelessWidget {
-  const LetterTapedWidget({required this.index, Key? key});
+  const LetterTapedWidget({required this.index, Key? key}) : super(key: key);
 
   final int index;
 
@@ -24,12 +24,12 @@ class LetterTapedWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<Observer>(
-      builder: (_, notifier, __) {
+      builder: (_, observer, __) {
         String text = "";
         Color color = Colors.white;
-        if (index < notifier.letterTaped.length) {
-          text = notifier.letterTaped[index].char;
-          color = getLetterColor(notifier.letterTaped[index].status);
+        if (index < observer.letterTaped.length) {
+          text = observer.letterTaped[index].char;
+          color = getLetterColor(observer.letterTaped[index].status);
         }
         return Container(
           color: color, // Apply the color based on the letter status

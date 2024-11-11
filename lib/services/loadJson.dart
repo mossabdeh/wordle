@@ -8,7 +8,7 @@ import 'dart:math';
 Future<List<String>> loadWords() async {
   try {
     // Load the JSON file
-    final String response = await rootBundle.rootBundle.loadString('assets/french_words.json');
+    final String response = await rootBundle.rootBundle.loadString('assets/english_words.json');
     print("JSON file loaded successfully.");
 
     // Decode JSON directly as a list
@@ -24,19 +24,19 @@ Future<List<String>> loadWords() async {
 }
 
 // TODO fix it for x letter
-Future<String?> getRandomWord() async {
+Future<String?> getRandomWord({int wordLength = 5}) async {
   final words = await loadWords();
+  // Filter words to include only those with the specified length
+  final filteredWords = words.where((word) => word.length == wordLength).toList();
 
-  // Filter words to include only those with 5 letters
-  final fiveLetterWords = words.where((word) => word.length == 5).toList();
-
-  // Check if there are any 5-letter words available
-  if (fiveLetterWords.isNotEmpty) {
-    final randomIndex = Random().nextInt(fiveLetterWords.length);
-    return fiveLetterWords[randomIndex];
+  // Check if there are any words with the specified length available
+  if (filteredWords.isNotEmpty) {
+    final randomIndex = Random().nextInt(filteredWords.length);
+    return filteredWords[randomIndex];
   } else {
-    print("No words with 5 letters found.");
+    print("No words with $wordLength letters found.");
     return null;
   }
 }
+
 

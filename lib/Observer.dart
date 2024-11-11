@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:wordle/constants/letterState.dart';
 import 'package:wordle/entities/letter.dart';
 import 'package:wordle/services/loadJson.dart';
-
+import 'components/Partiedialogue.dart';
 import 'constants/keyboard.dart';
 import 'constants/letterValue.dart';
 
@@ -12,34 +12,34 @@ class Observer extends ChangeNotifier {
   int currentRow = 0;
   List<Letter> letterTaped = [];
   late String winningWord;
+  bool loading = true;
+  bool hasWon = false;
+  bool hasLost = false;
 
   Observer() {
-    _setWinningWord(); // Initialize the winning word when Observer is created
+    _setWinningWord();
   }
 
-  // Method to asynchronously fetch the winning word
   Future<void> _setWinningWord() async {
-    final word = await getRandomWord(); // Assume getRandomWord is implemented elsewhere
+    final word = await getRandomWord();
     if (word != null) {
-      winningWord = word;
-      print(winningWord);
+      winningWord = word.toUpperCase();
+      print("Winning word selected: $winningWord");
     } else {
-      winningWord = "apple"; // Default word if no 5-letter word is found
-      print("No 5-letter word found, using default.");
+      winningWord = "APPLE";
+      print("No 5-letter word found, using default: $winningWord.");
     }
+    loading = false;
     notifyListeners();
   }
 
-  // Method to handle key input
   void setKeyTapped({required String value}) {
     if (value == 'ENTER') {
-      // Only check if 5 letters have been entered in the current row
       if (currentNode == 5 * (currentRow + 1)) {
         _checkGuess();
-        currentRow++; // Move to the next row after checking the guess
       }
     } else if (value == 'DEL') {
-      if (currentNode > 5 * (currentRow + 1) - 5) {
+      if (currentNode > 5 * currentRow) {
         currentNode--;
         letterTaped.removeLast();
       }
@@ -52,9 +52,7 @@ class Observer extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Method to check the guessed word
   void _checkGuess() {
-    // Collect the letters entered in the current row
     final guessedWord = letterTaped
         .skip(currentRow * 5)
         .take(5)
@@ -62,38 +60,33 @@ class Observer extends ChangeNotifier {
         .join();
 
     if (guessedWord == winningWord) {
-      print("Congratulations! You've guessed the word.");
-    } else {
-      print("Try again!");
-      _updateLetterStatus(guessedWord);
-      currentRow++;
+      for (int i = 0; i < guessedWord.length; i++) {
+        final index = currentRow * 5 + i;
+        letterTaped[index].status = LetterState.correct;
+        keyboardState[LetterValue.fromChar(guessedWord[i]) ?? LetterValue.A] = LetterState.correct;
+      }
+      hasWon = true;
+      notifyListeners();
+      return;
     }
-  }
 
-  // Update the letter statuses based on the winning word
-  void _updateLetterStatus(String guessedWord) {
     for (int i = 0; i < guessedWord.length; i++) {
-      // Find the matching LetterValue for each guessed character
-      final letterValue = LetterValue.values.firstWhere(
-            (e) => e.displayName == guessedWord[i].toUpperCase(),
-      );
-      if (guessedWord[i] == winningWord[i]) {
-        letterTaped[currentRow * 5 + i].status = LetterState.correct;
-        keyboardState[letterValue] = LetterState.correct;
-      } else if (winningWord.contains(guessedWord[i])) {
-        letterTaped[currentRow * 5 + i].status = LetterState.contains;
-        if (keyboardState[letterValue] != LetterState.correct) {
-          keyboardState[letterValue] = LetterState.contains;
-        }
+      final guessedLetter = guessedWord[i];
+      final index = currentRow * 5 + i;
+
+      if (winningWord.contains(guessedLetter)) {
+        letterTaped[index].status = guessedLetter == winningWord[i] ? LetterState.correct : LetterState.contains;
+        keyboardState[LetterValue.fromChar(guessedLetter) ?? LetterValue.A] = letterTaped[index].status;
       } else {
-        letterTaped[currentRow * 5 + i].status = LetterState.incorrect;
-        if (keyboardState[letterValue] != LetterState.correct &&
-            keyboardState[letterValue] != LetterState.contains) {
-          keyboardState[letterValue] = LetterState.incorrect;
-        }
+        letterTaped[index].status = LetterState.incorrect;
+        keyboardState[LetterValue.fromChar(guessedLetter) ?? LetterValue.A] = LetterState.incorrect;
       }
     }
+
+    currentRow++;
+    if (currentRow >= 6) {
+      hasLost = true;
+    }
+    notifyListeners();
   }
-
-
 }
