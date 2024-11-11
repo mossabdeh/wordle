@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wordle/Observer.dart';
+import 'package:wordle/pages/home_screen.dart';
 
-import 'pages/home_page.dart';
 
 void main() {
   runApp(MultiProvider(
@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const HomePage(),
+      home: const HomeScreen(), // Set HomeScreen as the initial page
     );
   }
 }
