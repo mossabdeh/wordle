@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../Observer.dart';
+import 'package:wordle/Observer.dart';
 
-void showWinDialog(BuildContext context) {
+void showWinDialog(BuildContext context, Observer observer) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -13,7 +12,7 @@ void showWinDialog(BuildContext context) {
           TextButton(
             child: Text("Restart"),
             onPressed: () {
-              Provider.of<Observer>(context, listen: false).resetGame();
+              observer.resetGame(); // Use the passed observer instance to reset the game
               Navigator.of(context).pop(); // Close the dialog
             },
           ),
@@ -29,7 +28,7 @@ void showWinDialog(BuildContext context) {
   );
 }
 
-void showLossDialog(BuildContext context, String winningWord) {
+void showLossDialog(BuildContext context, Observer observer, String winningWord) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -40,7 +39,7 @@ void showLossDialog(BuildContext context, String winningWord) {
           TextButton(
             child: Text("Restart"),
             onPressed: () {
-              Provider.of<Observer>(context, listen: false).resetGame();
+              observer.resetGame(); // Use the passed observer instance to reset the game
               Navigator.of(context).pop(); // Close the dialog
             },
           ),
