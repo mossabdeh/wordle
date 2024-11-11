@@ -20,6 +20,18 @@ class Observer extends ChangeNotifier {
     _setWinningWord();
   }
 
+  /* methode to reset the game */
+  void resetGame() {
+    currentNode = 0;
+    currentRow = 0;
+    letterTaped.clear();
+    hasWon = false;
+    hasLost = false;
+    loading = true;
+    // Fetch a new winning word and notify listeners when done
+    _setWinningWord();
+  }
+
   Future<void> _setWinningWord() async {
     final word = await getRandomWord();
     if (word != null) {

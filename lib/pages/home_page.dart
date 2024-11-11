@@ -41,14 +41,14 @@ class HomePage extends StatelessWidget {
               Expanded(
                 flex: 7,
                 child: Container(
-                  color: Colors.yellow,
+                  color: Colors.white10,
                   child: const Grid(),
                 ),
               ),
               Expanded(
                 flex: 4,
                 child: Container(
-                  color: Colors.green,
+                  color: Colors.white10,
                   child: const Column(
                     children: [
                       keyBoardRow(min: 1, max: 7),
