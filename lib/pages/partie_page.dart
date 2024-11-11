@@ -5,8 +5,8 @@ import '../components/grid.dart';
 import '../components/keyboard_row.dart';
 import '../components/Partiedialogue.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class PartiePage extends StatelessWidget {
+  const PartiePage({super.key});
 
   @override
   Widget build(BuildContext context) {
