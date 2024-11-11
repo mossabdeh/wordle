@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:wordle/Observer.dart';
 
 import '../constants/keyboard.dart';
 
@@ -30,7 +32,10 @@ class keyBoardRow extends StatelessWidget {
               height: size.height * 0.065,
               child : Material(
                 child: InkWell(
-                  onTap:(){} ,
+                  onTap:(){
+                    Provider.of<Observer>(context , listen: false)
+                        .setKeyTapped(value: e.key.displayName);
+                  } ,
                 child : Center(child:Text(e.key.displayName))),
               )),
             )); // Use `displayName` here

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'letter_taped_widget.dart';
+
 class Grid extends StatelessWidget {
   const Grid({
     super.key,
@@ -21,7 +23,7 @@ class Grid extends StatelessWidget {
           decoration: BoxDecoration(
             border: Border.all() //
           ),
-            child: Center(child: Text(index.toString())),
+            child: LetterTapedWidget(index: index,),
           );
         }
     );
