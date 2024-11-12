@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'classic_game_screen.dart';
 import 'survival_game_screen.dart';
 import 'dual_game_screen.dart';
+import 'stats_screen.dart'; // Import the StatsScreen
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -45,6 +46,16 @@ class HomeScreen extends StatelessWidget {
                 );
               },
               child: const Text('Partie Dual'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => StatsScreen()), // Navigate to StatsScreen
+                );
+              },
+              child: const Text('View Stats'),
             ),
           ],
         ),
