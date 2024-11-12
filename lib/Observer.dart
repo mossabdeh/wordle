@@ -5,8 +5,11 @@ import 'package:wordle/entities/letter.dart';
 import 'package:wordle/services/loadJson.dart';
 import 'constants/keyboard.dart';
 import 'constants/letterValue.dart';
+import 'dao/partie_dao.dart';
+import 'entities/partie.dart';
 
 class Observer extends ChangeNotifier {
+  final PartieDAO _partieDAO = PartieDAO(); // Instance of PartieDAO
   int currentNode = 0;
   int currentRow = 0;
   List<Letter> letterTaped = [];
@@ -80,10 +83,16 @@ class Observer extends ChangeNotifier {
       for (int i = 0; i < guessedWord.length; i++) {
         final index = currentRow * wordLength + i;
         letterTaped[index].status = LetterState.correct;
-        keyboardState[LetterValue.fromChar(guessedWord[i]) ?? LetterValue.A] = LetterState.correct;
+        keyboardState[LetterValue.fromChar(guessedWord[i]) ?? LetterValue.A] =
+            LetterState.correct;
       }
       hasWon = true;
+
       notifyListeners();
+
+      if (hasWon || hasLost) {
+        saveCompletedGame(hasWon);
+      }
       return;
     }
 
@@ -93,11 +102,15 @@ class Observer extends ChangeNotifier {
       final index = currentRow * wordLength + i;
 
       if (winningWord.contains(guessedLetter)) {
-        letterTaped[index].status = guessedLetter == winningWord[i] ? LetterState.correct : LetterState.contains;
-        keyboardState[LetterValue.fromChar(guessedLetter) ?? LetterValue.A] = letterTaped[index].status;
+        letterTaped[index].status =
+        guessedLetter == winningWord[i] ? LetterState.correct : LetterState
+            .contains;
+        keyboardState[LetterValue.fromChar(guessedLetter) ?? LetterValue.A] =
+            letterTaped[index].status;
       } else {
         letterTaped[index].status = LetterState.incorrect;
-        keyboardState[LetterValue.fromChar(guessedLetter) ?? LetterValue.A] = LetterState.incorrect;
+        keyboardState[LetterValue.fromChar(guessedLetter) ?? LetterValue.A] =
+            LetterState.incorrect;
       }
     }
 
@@ -107,5 +120,20 @@ class Observer extends ChangeNotifier {
       hasLost = true;
     }
     notifyListeners();
+  }
+
+  // Call this when the game is completed
+  // Call this when the game is completed
+  Future<void> saveCompletedGame(bool won) async {
+    final partie = PartieEntity(
+      secretWord: winningWord,
+      date: DateTime.now(),
+      attempts: currentRow,
+      guessedLetters: letterTaped.map((e) => e.char).join(),
+      gameMode: 'Classic', // Currently only 'Classic' mode is supported
+    );
+
+    await _partieDAO.insertPartie(partie);
+    print('Game saved to database!');
   }
 }
