@@ -1,4 +1,3 @@
-/* Entity To store into database SQlite(sqflite) table */
 class PartieEntity {
   final int? id;
   final String secretWord;
@@ -6,6 +5,7 @@ class PartieEntity {
   final int attempts;
   final String guessedLetters;
   final String gameMode;
+  final int wordLength; // Add this field to store word length
 
   PartieEntity({
     this.id,
@@ -14,22 +14,22 @@ class PartieEntity {
     required this.attempts,
     required this.guessedLetters,
     required this.gameMode,
+    required this.wordLength,
   });
 
-  // Convert a PartieEntity object to a map. This will be used for inserting into the database.
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'secretWord': secretWord,
-      'date': date.toIso8601String(), // Store as ISO8601 string for easy DateTime conversion
+      'date': date.toIso8601String(),
       'attempts': attempts,
       'guessedLetters': guessedLetters,
       'gameMode': gameMode,
+      'wordLength': wordLength, // Include this field in toMap
     };
   }
 
-  // Convert a map into a PartieEntity object. This will be used for fetching from the database.
-  static PartieEntity fromMap(Map<String, dynamic> map) {
+  factory PartieEntity.fromMap(Map<String, dynamic> map) {
     return PartieEntity(
       id: map['id'],
       secretWord: map['secretWord'],
@@ -37,6 +37,7 @@ class PartieEntity {
       attempts: map['attempts'],
       guessedLetters: map['guessedLetters'],
       gameMode: map['gameMode'],
+      wordLength: map['wordLength'], // Include this field in fromMap
     );
   }
 }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../dao/partie_dao.dart';
-import '../entities/partie.dart'; // Import PartieEntity
+import '../entities/partie.dart';
+
 
 class StatsScreen extends StatefulWidget {
   const StatsScreen({Key? key}) : super(key: key);
@@ -17,6 +18,14 @@ class _StatsScreenState extends State<StatsScreen> {
   void initState() {
     super.initState();
     _partiesFuture = PartieDAO().getParties(); // Fetch saved games on init
+  }
+
+  List<String> formatGuessedLetters(String guessedLetters, int wordLength) {
+    List<String> attempts = [];
+    for (int i = 0; i < guessedLetters.length; i += wordLength) {
+      attempts.add(guessedLetters.substring(i, i + wordLength));
+    }
+    return attempts;
   }
 
   @override
@@ -40,6 +49,8 @@ class _StatsScreenState extends State<StatsScreen> {
               itemCount: parties.length,
               itemBuilder: (context, index) {
                 final partie = parties[index];
+                final attempts = formatGuessedLetters(partie.guessedLetters, partie.wordLength);
+
                 return ListTile(
                   title: Text("Secret Word: ${partie.secretWord}"),
                   subtitle: Column(
@@ -47,8 +58,10 @@ class _StatsScreenState extends State<StatsScreen> {
                     children: [
                       Text("Date: ${partie.date}"),
                       Text("Attempts: ${partie.attempts}"),
-                      Text("Guessed Letters: ${partie.guessedLetters}"),
                       Text("Game Mode: ${partie.gameMode}"),
+                      const SizedBox(height: 5),
+                      Text("Guessed Letters:"),
+                      ...attempts.map((attempt) => Text(attempt)).toList(),
                     ],
                   ),
                 );

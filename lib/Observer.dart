@@ -78,6 +78,8 @@ class Observer extends ChangeNotifier {
         .map((letter) => letter.char)
         .join();
 
+    print("Guessed Word: $guessedWord, Winning Word: $winningWord"); // Debugging log
+
     // Check if the guessed word matches the winning word
     if (guessedWord == winningWord) {
       for (int i = 0; i < guessedWord.length; i++) {
@@ -87,53 +89,80 @@ class Observer extends ChangeNotifier {
             LetterState.correct;
       }
       hasWon = true;
+      print("Player won the game."); // Debugging log
+    } else {
+      // Update the colors for each letter based on the winning word
+      for (int i = 0; i < guessedWord.length; i++) {
+        final guessedLetter = guessedWord[i];
+        final index = currentRow * wordLength + i;
 
-      notifyListeners();
-
-      if (hasWon || hasLost) {
-        saveCompletedGame(hasWon);
+        if (winningWord.contains(guessedLetter)) {
+          letterTaped[index].status =
+          guessedLetter == winningWord[i] ? LetterState.correct : LetterState.contains;
+          keyboardState[LetterValue.fromChar(guessedLetter) ?? LetterValue.A] =
+              letterTaped[index].status;
+        } else {
+          letterTaped[index].status = LetterState.incorrect;
+          keyboardState[LetterValue.fromChar(guessedLetter) ?? LetterValue.A] =
+              LetterState.incorrect;
+        }
       }
-      return;
-    }
 
-    // Update the colors for each letter based on the winning word
-    for (int i = 0; i < guessedWord.length; i++) {
-      final guessedLetter = guessedWord[i];
-      final index = currentRow * wordLength + i;
-
-      if (winningWord.contains(guessedLetter)) {
-        letterTaped[index].status =
-        guessedLetter == winningWord[i] ? LetterState.correct : LetterState
-            .contains;
-        keyboardState[LetterValue.fromChar(guessedLetter) ?? LetterValue.A] =
-            letterTaped[index].status;
-      } else {
-        letterTaped[index].status = LetterState.incorrect;
-        keyboardState[LetterValue.fromChar(guessedLetter) ?? LetterValue.A] =
-            LetterState.incorrect;
+      // Move to the next row and check for game over
+      currentRow++;
+      if (currentRow >= maxAttempts) {
+        hasLost = true;
+        print("Player lost the game."); // Debugging log
       }
     }
 
-    // Move to the next row and check for game over
-    currentRow++;
-    if (currentRow >= maxAttempts) {
-      hasLost = true;
+    // Check if game is won or lost, and save the game result
+    if (hasWon || hasLost) {
+      print("Saving completed game. hasWon: $hasWon, hasLost: $hasLost"); // Debugging log
+      saveCompletedGame(hasWon);
     }
+
     notifyListeners();
   }
 
-  // Call this when the game is completed
-  // Call this when the game is completed
-  Future<void> saveCompletedGame(bool won) async {
-    final partie = PartieEntity(
-      secretWord: winningWord,
-      date: DateTime.now(),
-      attempts: currentRow,
-      guessedLetters: letterTaped.map((e) => e.char).join(),
-      gameMode: 'Classic', // Currently only 'Classic' mode is supported
-    );
 
-    await _partieDAO.insertPartie(partie);
-    print('Game saved to database!');
+
+  // Call this when the game is completed
+
+  Future<void> saveCompletedGame(bool won) async {
+    try {
+      print('Starting saveCompletedGame...');
+
+      // Log game details
+      print('Game details:');
+      print('Winning Word: $winningWord');
+      print('Date: ${DateTime.now()}');
+      print('Attempts: $currentRow');
+      print('Guessed Letters: ${letterTaped.map((e) => e.char).join()}');
+      print('Game Mode: Classic');
+      print('Word Length: $wordLength');
+
+      final partie = PartieEntity(
+        secretWord: winningWord,
+        date: DateTime.now(),
+        attempts: currentRow,
+        guessedLetters: letterTaped.map((e) => e.char).join(),
+        gameMode: 'Classic',
+        wordLength: wordLength,
+      );
+
+      print('Attempting to insert PartieEntity into database...');
+      final result = await _partieDAO.insertPartie(partie);
+
+      if (result != -1) {
+        print('Game saved to database successfully with id: $result');
+      } else {
+        print('Failed to save game to database');
+      }
+    } catch (e) {
+      print('Error occurred while saving game to database: $e');
+    }
   }
+
+
 }
