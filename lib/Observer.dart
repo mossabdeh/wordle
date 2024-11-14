@@ -164,5 +164,36 @@ class Observer extends ChangeNotifier {
     }
   }
 
+  Future<List<PartieEntity>> getParties() async {
+    return await _partieDAO.getParties();
+  }
+
+  Future<int> get totalGamesPlayed async {
+    final games = await _partieDAO.getParties();
+    return games.length;
+  }
+
+  Future<double> get winPercentage async {
+    final games = await _partieDAO.getParties();
+    final wonGames = games.where((partie) => partie.attempts <= maxAttempts).length;
+    return (wonGames / games.length) * 100;
+  }
+
+  Future<double> get averageAttempts async {
+    final games = await _partieDAO.getParties();
+    if (games.isEmpty) return 0.0; // Avoid division by zero
+
+    // Calculate the percentage of attempts used for each game
+    final totalPercentage = games.fold(0.0, (sum, partie) {
+      final attemptsPercentage = (partie.attempts / maxAttempts) * 100;
+      return sum + attemptsPercentage;
+    });
+
+    // Return the average percentage of attempts used
+    return totalPercentage / games.length;
+  }
+
+
+
 
 }
