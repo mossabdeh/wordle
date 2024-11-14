@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wordle/pages/stats_page.dart';
 import 'classic_game_screen.dart';
 import 'survival_game_screen.dart';
 import 'dual_game_screen.dart';
@@ -57,6 +58,18 @@ class HomeScreen extends StatelessWidget {
               },
               child: const Text('View Stats'),
             ),
+
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const StatsPage()),
+                );
+              },
+              child: const Text('View Stats'),
+            ),
+
           ],
         ),
       ),
