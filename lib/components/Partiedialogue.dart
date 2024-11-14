@@ -12,14 +12,19 @@ void showWinDialog(BuildContext context, Observer observer) {
           TextButton(
             child: Text("Restart"),
             onPressed: () {
-              observer.resetGame(); // Use the passed observer instance to reset the game
+              observer.resetGame(); // Classic reset
               Navigator.of(context).pop(); // Close the dialog
             },
           ),
           TextButton(
             child: Text("OK"),
             onPressed: () {
-              Navigator.of(context).pop();
+              if (observer.isSurvivalMode) {
+                observer.incrementSurvivalLevel(); // Start the next level in Survival Mode
+              } else {
+                observer.resetGame(); // Classic Mode reset
+              }
+              Navigator.of(context).pop(); // Close the dialog
             },
           ),
         ],
@@ -27,6 +32,8 @@ void showWinDialog(BuildContext context, Observer observer) {
     },
   );
 }
+
+
 
 void showLossDialog(BuildContext context, Observer observer, String winningWord) {
   showDialog(
@@ -39,14 +46,14 @@ void showLossDialog(BuildContext context, Observer observer, String winningWord)
           TextButton(
             child: Text("Restart"),
             onPressed: () {
-              observer.resetGame(); // Use the passed observer instance to reset the game
-              Navigator.of(context).pop(); // Close the dialog
+              observer.resetGame(); // Reset game in either mode
+              Navigator.of(context).pop(); // Close dialog
             },
           ),
           TextButton(
             child: Text("OK"),
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.of(context).pop(); // Close dialog
             },
           ),
         ],
@@ -54,3 +61,4 @@ void showLossDialog(BuildContext context, Observer observer, String winningWord)
     },
   );
 }
+

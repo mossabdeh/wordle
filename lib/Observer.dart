@@ -3,13 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:wordle/constants/letterState.dart';
 import 'package:wordle/entities/letter.dart';
 import 'package:wordle/services/loadJson.dart';
-import 'constants/keyboard.dart';
-import 'constants/letterValue.dart';
 import 'dao/partie_dao.dart';
 import 'entities/partie.dart';
 
 class Observer extends ChangeNotifier {
-  final PartieDAO _partieDAO = PartieDAO(); // Instance of PartieDAO
+  final PartieDAO _partieDAO = PartieDAO();
   int currentNode = 0;
   int currentRow = 0;
   List<Letter> letterTaped = [];
@@ -20,37 +18,80 @@ class Observer extends ChangeNotifier {
   int maxAttempts;
   int wordLength;
 
-  /* Method to reset the game */
+  // Survival Mode attributes
+  int survivalWordLength = 3;
+  int survivalAttempts = 10;
+  int consecutiveCorrectGuesses = 0;
+  int score = 0;
+  bool isSurvivalMode = false;
+
+  Observer({required this.wordLength, required this.maxAttempts, this.isSurvivalMode = false}) {
+    print("Observer initialized with wordLength: $wordLength, maxAttempts: $maxAttempts, isSurvivalMode: $isSurvivalMode");
+    if (isSurvivalMode) {
+      startSurvivalMode();
+    } else {
+      _setWinningWord();
+    }
+  }
+
+  // Initialize Survival Mode
+  void startSurvivalMode() {
+    print("Starting Survival Mode");
+    isSurvivalMode = true;
+    resetSurvivalGame();
+  }
+
+  // Start or reset survival mode attributes
+  void resetSurvivalGame() {
+    survivalWordLength = 3;
+    survivalAttempts = 10;
+    consecutiveCorrectGuesses = 0;
+    score = 0;
+    hasLost = false;
+    wordLength = survivalWordLength;
+    maxAttempts = survivalAttempts;
+    _setNewSurvivalWord();
+    notifyListeners();
+  }
+
+  // Set a new word for Survival Mode
+  Future<void> _setNewSurvivalWord() async {
+    final word = await getRandomWord(wordLength: survivalWordLength);
+    winningWord = word?.toUpperCase() ?? "APPLE";
+    loading = false;
+    notifyListeners();
+  }
+
+  // Set a new word for Classic Mode
+  Future<void> _setWinningWord() async {
+    final word = await getRandomWord(wordLength: wordLength);
+    winningWord = word?.toUpperCase() ?? "APPLE";
+    loading = false;
+    notifyListeners();
+  }
+
+  // Reset game based on the mode
   void resetGame() {
+    if (isSurvivalMode) {
+      resetSurvivalGame();
+    } else {
+      _resetClassicGame();
+    }
+    notifyListeners();
+  }
+
+  // Classic Mode game reset
+  void _resetClassicGame() {
     currentNode = 0;
     currentRow = 0;
     letterTaped.clear();
     hasWon = false;
     hasLost = false;
     loading = true;
-
-    // Re-fetch a new winning word with the current wordLength setting
     _setWinningWord();
   }
 
-
-  Observer({required this.wordLength, required this.maxAttempts}) {
-    _setWinningWord();
-  }
-
-  Future<void> _setWinningWord() async {
-    final word = await getRandomWord(wordLength: wordLength);
-    if (word != null) {
-      winningWord = word.toUpperCase();
-      print("Winning word selected: $winningWord");
-    } else {
-      winningWord = "APPLE";
-      print("No $wordLength-letter word found, using default: $winningWord.");
-    }
-    loading = false;
-    notifyListeners();
-  }
-
+  // Handle key taps for both modes
   void setKeyTapped({required String value}) {
     if (value == 'ENTER') {
       if (currentNode == wordLength * (currentRow + 1)) {
@@ -70,97 +111,122 @@ class Observer extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Check guess and determine win or loss
   void _checkGuess() {
-    // Collect the guessed word for the current row
     final guessedWord = letterTaped
         .skip(currentRow * wordLength)
         .take(wordLength)
         .map((letter) => letter.char)
         .join();
 
-    print("Guessed Word: $guessedWord, Winning Word: $winningWord"); // Debugging log
+    print("Guessed Word: $guessedWord, Winning Word: $winningWord");
 
-    // Check if the guessed word matches the winning word
     if (guessedWord == winningWord) {
-      for (int i = 0; i < guessedWord.length; i++) {
-        final index = currentRow * wordLength + i;
-        letterTaped[index].status = LetterState.correct;
-        keyboardState[LetterValue.fromChar(guessedWord[i]) ?? LetterValue.A] =
-            LetterState.correct;
+      print("Word guessed correctly");
+      _markWin();
+      if (isSurvivalMode) {
+        incrementSurvivalLevel();
       }
-      hasWon = true;
-      print("Player won the game."); // Debugging log
     } else {
-      // Update the colors for each letter based on the winning word
-      for (int i = 0; i < guessedWord.length; i++) {
-        final guessedLetter = guessedWord[i];
-        final index = currentRow * wordLength + i;
-
-        if (winningWord.contains(guessedLetter)) {
-          letterTaped[index].status =
-          guessedLetter == winningWord[i] ? LetterState.correct : LetterState.contains;
-          keyboardState[LetterValue.fromChar(guessedLetter) ?? LetterValue.A] =
-              letterTaped[index].status;
-        } else {
-          letterTaped[index].status = LetterState.incorrect;
-          keyboardState[LetterValue.fromChar(guessedLetter) ?? LetterValue.A] =
-              LetterState.incorrect;
-        }
-      }
-
-      // Move to the next row and check for game over
-      currentRow++;
-      if (currentRow >= maxAttempts) {
-        hasLost = true;
-        print("Player lost the game."); // Debugging log
-      }
+      print("Incorrect guess: $guessedWord");
+      _markIncorrect(guessedWord);
     }
 
-    // Check if game is won or lost, and save the game result
     if (hasWon || hasLost) {
-      print("Saving completed game. hasWon: $hasWon, hasLost: $hasLost"); // Debugging log
       saveCompletedGame(hasWon);
     }
 
     notifyListeners();
   }
 
+  // Mark win for both modes
+  void _markWin() {
+    for (int i = 0; i < winningWord.length; i++) {
+      final index = currentRow * wordLength + i;
+      letterTaped[index].status = LetterState.correct;
+    }
+    hasWon = true;
+  }
+
+  // Mark incorrect guesses
+  void _markIncorrect(String guessedWord) {
+    for (int i = 0; i < guessedWord.length; i++) {
+      final guessedLetter = guessedWord[i];
+      final index = currentRow * wordLength + i;
+
+      if (winningWord.contains(guessedLetter)) {
+        letterTaped[index].status = guessedLetter == winningWord[i]
+            ? LetterState.correct
+            : LetterState.contains;
+      } else {
+        letterTaped[index].status = LetterState.incorrect;
+      }
+    }
+
+    currentRow++;
+    if (currentRow >= maxAttempts) {
+      hasLost = true;
+    }
+  }
+
+  // Increment survival level for Survival Mode
+  void incrementSurvivalLevel() {
+    if (isSurvivalMode) {
+      print("Survival Mode - incrementing level");
+      score++;  // Increase the score for each correct guess
+      consecutiveCorrectGuesses++;
+
+      if (consecutiveCorrectGuesses >= (wordLength ~/ 2)) {
+        survivalWordLength++;  // Increase the word length
+        consecutiveCorrectGuesses = 0;  // Reset consecutive correct guesses
+
+        // Reduce attempts with each word length increment, with a minimum of 3 attempts
+        survivalAttempts = (survivalAttempts > 3) ? survivalAttempts - 1 : 3;
+      }
+
+      // Update the current game settings to reflect the new survival values
+      wordLength = survivalWordLength;
+      maxAttempts = survivalAttempts;
+
+      // Set a new word for the next level and reset the game state for the grid
+      _setNewSurvivalWord();  // Generate a new winning word based on the new word length
+      resetSurvivalGrid();  // Clear the board for the new level
+
+      // Log the updated settings to confirm
+      print("New word length: $wordLength, New attempts: $maxAttempts, New winning word: $winningWord");
+      notifyListeners();  // Notify UI to update with the new values
+    } else {
+      print("Not in Survival Mode");
+    }
+  }
 
 
-  // Call this when the game is completed
+  // Helper method to reset the grid state in Survival Mode
+  void resetSurvivalGrid() {
+    print("Resetting grid state for new level in Survival Mode");
+    currentNode = 0;
+    currentRow = 0;
+    letterTaped.clear();
+    hasWon = false;
+    hasLost = false;
+    loading = false;
+  }
 
+  // Save completed game
   Future<void> saveCompletedGame(bool won) async {
     try {
-      print('Starting saveCompletedGame...');
-
-      // Log game details
-      print('Game details:');
-      print('Winning Word: $winningWord');
-      print('Date: ${DateTime.now()}');
-      print('Attempts: $currentRow');
-      print('Guessed Letters: ${letterTaped.map((e) => e.char).join()}');
-      print('Game Mode: Classic');
-      print('Word Length: $wordLength');
-
       final partie = PartieEntity(
         secretWord: winningWord,
         date: DateTime.now(),
         attempts: currentRow,
         guessedLetters: letterTaped.map((e) => e.char).join(),
-        gameMode: 'Classic',
+        gameMode: isSurvivalMode ? 'Survival' : 'Classic',
         wordLength: wordLength,
       );
 
-      print('Attempting to insert PartieEntity into database...');
-      final result = await _partieDAO.insertPartie(partie);
-
-      if (result != -1) {
-        print('Game saved to database successfully with id: $result');
-      } else {
-        print('Failed to save game to database');
-      }
+      await _partieDAO.insertPartie(partie);
     } catch (e) {
-      print('Error occurred while saving game to database: $e');
+      print('Error saving game: $e');
     }
   }
 
@@ -181,19 +247,13 @@ class Observer extends ChangeNotifier {
 
   Future<double> get averageAttempts async {
     final games = await _partieDAO.getParties();
-    if (games.isEmpty) return 0.0; // Avoid division by zero
+    if (games.isEmpty) return 0.0;
 
-    // Calculate the percentage of attempts used for each game
     final totalPercentage = games.fold(0.0, (sum, partie) {
       final attemptsPercentage = (partie.attempts / maxAttempts) * 100;
       return sum + attemptsPercentage;
     });
 
-    // Return the average percentage of attempts used
     return totalPercentage / games.length;
   }
-
-
-
-
 }
