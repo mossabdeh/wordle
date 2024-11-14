@@ -8,16 +8,25 @@ import '../components/Partiedialogue.dart';
 class PartiePage extends StatelessWidget {
   final int wordLength;
   final int attempts;
+  final bool isSurvivalMode;
 
-  const PartiePage({super.key, required this.wordLength, required this.attempts});
+  const PartiePage({
+    Key? key,
+    required this.wordLength,
+    required this.attempts,
+    this.isSurvivalMode = false,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => Observer(wordLength: wordLength, maxAttempts: attempts),
+      create: (_) => Observer(
+        wordLength: wordLength,
+        maxAttempts: attempts,
+      )..isSurvivalMode = isSurvivalMode, // Set survival mode status
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Wordle'),
+          title: Text(isSurvivalMode ? 'Survival Mode' : 'Wordle'),
           centerTitle: true,
           elevation: 0,
         ),
@@ -47,7 +56,7 @@ class PartiePage extends StatelessWidget {
                   flex: 7,
                   child: Container(
                     color: Colors.white10,
-                    child: Grid(wordLength: wordLength, attempts: attempts),
+                    child: Grid(wordLength: observer.wordLength, attempts: observer.maxAttempts),
                   ),
                 ),
                 Expanded(
