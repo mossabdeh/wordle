@@ -25,23 +25,77 @@ class PartiePage extends StatelessWidget {
         maxAttempts: attempts,
       )..isSurvivalMode = isSurvivalMode, // Set survival mode status
       child: Scaffold(
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(70), // Reduced AppBar height
-          child: AppBar(
-            title: Text(
-              isSurvivalMode ? 'Survival Mode' : 'Wordle',
-              style: const TextStyle(
-                fontFamily: 'Raleway',
-                fontWeight: FontWeight.bold,
-                fontSize: 20, // Slightly smaller font size
-                color: Color(0xFF6B8E23), // Olive Green
+        appBar: AppBar(
+          backgroundColor: const Color(0xFFFAF3E0), // Soft Cream
+          elevation: 0,
+          iconTheme: const IconThemeData(color: Color(0xFF6B8E23)), // Olive Green
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              isSurvivalMode
+                  ? Row(
+                children: [
+                  const Icon(
+                    Icons.shield,
+                    color: Color(0xFFD2691E), // Brown accent
+                    size: 24,
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    "Survival Mode",
+                    style: TextStyle(
+                      fontFamily: 'Raleway',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: Color(0xFF6B8E23), // Olive Green
+                    ),
+                  ),
+                ],
+              )
+                  : const Text(
+                "Wordle",
+                style: TextStyle(
+                  fontFamily: 'Raleway',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  color: Color(0xFF6B8E23), // Olive Green
+                ),
               ),
-            ),
-            centerTitle: true,
-            backgroundColor: const Color(0xFFFAF3E0), // Soft Cream
-            elevation: 0,
-            iconTheme: const IconThemeData(color: Color(0xFF6B8E23)),
+              if (isSurvivalMode)
+                Consumer<Observer>(
+                  builder: (context, observer, child) {
+                    return Row(
+                      children: [
+                        const Icon(
+                          Icons.star,
+                          color: Color(0xFFD2691E), // Brown accent
+                          size: 24,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          "${observer.score}",
+                          style: const TextStyle(
+                            fontFamily: 'Raleway',
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: Color(0xFF6B8E23), // Olive Green
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+            ],
           ),
+          centerTitle: false,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.help_outline, color: Color(0xFF6B8E23)),
+              onPressed: () {
+                _showGameExplanationDialog(context, isSurvivalMode);
+              },
+            ),
+          ],
         ),
         body: Container(
           decoration: const BoxDecoration(
@@ -77,6 +131,41 @@ class PartiePage extends StatelessWidget {
 
               return Column(
                 children: [
+                  // Survival Stats Section (Word Length & Attempts)
+                  if (isSurvivalMode)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      child: Card(
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        color: const Color(0xFFE8F5E9), // Light Green
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              _buildStatItem(
+                                icon: Icons.text_snippet_outlined,
+                                label: "Word",
+                                value: "${observer.survivalWordLength} Letters",
+                                iconColor: const Color(0xFF6B8E23), // Olive Green
+                                isSmaller: true, // Adjust size
+                              ),
+                              _buildStatItem(
+                                icon: Icons.favorite_border,
+                                label: "Attempts",
+                                value: "${observer.survivalAttempts}",
+                                iconColor: const Color(0xFF6B8E23), // Olive Green
+                                isSmaller: true, // Adjust size
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
                   // Grid Section
                   Expanded(
                     flex: 7,
@@ -104,6 +193,99 @@ class PartiePage extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildStatItem({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color iconColor,
+    bool isSmaller = false,
+  }) {
+    return Column(
+      children: [
+        Icon(icon, size: 12, color: iconColor), // Reduced icon size
+        const SizedBox(height: 1),
+        Text(
+          label,
+          style: const TextStyle(
+            fontFamily: 'Raleway',
+            fontSize: 8, // Reduced label font size
+            color: Colors.black54,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontFamily: 'Raleway',
+            fontWeight: FontWeight.bold,
+            fontSize: isSmaller ? 8 : 12, // Reduced value font size
+            color: Colors.black87,
+          ),
+        ),
+      ],
+    );
+  }
+
+
+  void _showGameExplanationDialog(BuildContext context, bool isSurvivalMode) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16), // Rounded corners
+          ),
+          backgroundColor: const Color(0xFFFAF3E0), // Soft Cream
+          title: const Center(
+            child: Text(
+              "Game Explanation",
+              style: TextStyle(
+                fontFamily: 'Raleway',
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: Color(0xFF6B8E23), // Olive Green
+              ),
+            ),
+          ),
+          content: Text(
+            isSurvivalMode
+                ? "In Survival Mode:\n\n- Guess words of increasing length.\n- You have limited attempts for each word.\n- Score points by progressing through levels."
+                : "In Classic Mode:\n\n- Guess a fixed-length secret word.\n- You have a set number of attempts.\n- Match letters to solve the puzzle.",
+            style: const TextStyle(
+              fontFamily: 'Raleway',
+              fontSize: 16,
+              color: Colors.black87,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF6B8E23), // Olive Green
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text(
+                "Got It!",
+                style: TextStyle(
+                  fontFamily: 'Raleway',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

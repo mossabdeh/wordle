@@ -15,7 +15,7 @@ class HomeScreen extends StatelessWidget {
         preferredSize: const Size.fromHeight(100), // Increased AppBar height
         child: AppBar(
           title: const Text(
-            'Wordle Game Modes',
+            'Wordle Game',
             style: TextStyle(
               color: Color(0xFF6B8E23), // Olive Green
               fontFamily: 'Raleway',

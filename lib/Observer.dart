@@ -60,7 +60,7 @@ class Observer extends ChangeNotifier {
     }
   }
 
-  // Initialize Duel Mode
+ /* Survie Mode  */
 
   void startDuelMode({required int rounds, required int attempts, required int wordLength}) {
     print("Starting Duel Mode with $rounds rounds, $attempts attempts, and word length of $wordLength");
@@ -80,21 +80,6 @@ class Observer extends ChangeNotifier {
 
     resetGameForNextTurn();
   }
-
-
-
-  void resetGameForNextTurn() {
-    currentNode = 0;
-    currentRow = 0;
-    letterTaped.clear();
-    hasWon = false;
-    hasLost = false;
-    loading = false; // No need to load a new word in Duel Mode
-    notifyListeners();
-  }
-
-
-  // Initialize Survival Mode
   void startSurvivalMode() {
     print("Starting Survival Mode");
     isSurvivalMode = true;
@@ -113,18 +98,64 @@ class Observer extends ChangeNotifier {
     _setNewSurvivalWord();
     notifyListeners();
   }
-
   // Set a new word for Survival Mode
   Future<void> _setNewSurvivalWord() async {
     final word = await getRandomWord(wordLength: survivalWordLength);
+    print("worrrrrrrrrrrrrrrd $word" );
     winningWord = word?.toUpperCase() ?? "APPLE";
     loading = false;
     notifyListeners();
   }
 
+  // Increment survival level for Survival Mode
+  void incrementSurvivalLevel() {
+    if (isSurvivalMode) {
+      print("Survival Mode - incrementing level");
+      score++;  // Increase the score for each correct guess
+      consecutiveCorrectGuesses++;
+
+      if (consecutiveCorrectGuesses >= (wordLength ~/ 2)) {
+        survivalWordLength++;  // Increase the word length
+        consecutiveCorrectGuesses = 0;  // Reset consecutive correct guesses
+
+        // Reduce attempts with each word length increment, with a minimum of 3 attempts
+        survivalAttempts = (survivalAttempts > 3) ? survivalAttempts - 1 : 3;
+      }
+
+      // Update the current game settings to reflect the new survival values
+      wordLength = survivalWordLength;
+      maxAttempts = survivalAttempts;
+
+      // Set a new word for the next level and reset the game state for the grid
+      _setNewSurvivalWord();  // Generate a new winning word based on the new word length
+      resetSurvivalGrid();  // Clear the board for the new level
+
+      // Log the updated settings to confirm
+      print("New word length: $wordLength, New attempts: $maxAttempts, New winning word: $winningWord");
+      notifyListeners();  // Notify UI to update with the new values
+    } else {
+      print("Not in Survival Mode");
+    }
+  }
+  // Helper method to reset the grid state in Survival Mode
+  void resetSurvivalGrid() {
+    print("Resetting grid state for new level in Survival Mode");
+    currentNode = 0;
+    currentRow = 0;
+    letterTaped.clear();
+    hasWon = false;
+    hasLost = false;
+    loading = false;
+  }
+
+
+
+
+
   // Set a new word for Classic Mode
   Future<void> _setWinningWord() async {
     final word = await getRandomWord(wordLength: wordLength);
+    print("classic word '''''''''''' $word");
     winningWord = word?.toUpperCase() ?? "APPLE"; // Default to "APPLE" if no word is retrieved
     loading = false;
     notifyListeners();
@@ -239,7 +270,15 @@ class Observer extends ChangeNotifier {
   }
 
 
-
+  void resetGameForNextTurn() {
+    currentNode = 0;
+    currentRow = 0;
+    letterTaped.clear();
+    hasWon = false;
+    hasLost = false;
+    loading = false; // No need to load a new word in Duel Mode
+    notifyListeners();
+  }
 
 
 
@@ -284,48 +323,6 @@ class Observer extends ChangeNotifier {
 
 
 
-  // Increment survival level for Survival Mode
-  void incrementSurvivalLevel() {
-    if (isSurvivalMode) {
-      print("Survival Mode - incrementing level");
-      score++;  // Increase the score for each correct guess
-      consecutiveCorrectGuesses++;
-
-      if (consecutiveCorrectGuesses >= (wordLength ~/ 2)) {
-        survivalWordLength++;  // Increase the word length
-        consecutiveCorrectGuesses = 0;  // Reset consecutive correct guesses
-
-        // Reduce attempts with each word length increment, with a minimum of 3 attempts
-        survivalAttempts = (survivalAttempts > 3) ? survivalAttempts - 1 : 3;
-      }
-
-      // Update the current game settings to reflect the new survival values
-      wordLength = survivalWordLength;
-      maxAttempts = survivalAttempts;
-
-      // Set a new word for the next level and reset the game state for the grid
-      _setNewSurvivalWord();  // Generate a new winning word based on the new word length
-      resetSurvivalGrid();  // Clear the board for the new level
-
-      // Log the updated settings to confirm
-      print("New word length: $wordLength, New attempts: $maxAttempts, New winning word: $winningWord");
-      notifyListeners();  // Notify UI to update with the new values
-    } else {
-      print("Not in Survival Mode");
-    }
-  }
-
-
-  // Helper method to reset the grid state in Survival Mode
-  void resetSurvivalGrid() {
-    print("Resetting grid state for new level in Survival Mode");
-    currentNode = 0;
-    currentRow = 0;
-    letterTaped.clear();
-    hasWon = false;
-    hasLost = false;
-    loading = false;
-  }
 
   // Save completed game
   Future<void> saveCompletedGame(bool won) async {
