@@ -11,17 +11,16 @@ class Grid extends StatelessWidget {
   Widget build(BuildContext context) {
     return GridView.builder(
       itemCount: wordLength * attempts, // Dynamically adjust based on word length and attempts
-      padding: const EdgeInsets.fromLTRB(36, 20, 36, 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Slight padding around the grid
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        mainAxisSpacing: 4,
-        crossAxisSpacing: 4,
-        crossAxisCount: wordLength, // Adjust columns based on word length
+        mainAxisSpacing: 3, // Minimal spacing between rows
+        crossAxisSpacing: 2, // Minimal spacing between columns
+        crossAxisCount: wordLength, // Columns based on word length
       ),
       itemBuilder: (context, index) {
-        return Container(
-          decoration: BoxDecoration(
-            border: Border.all(),
-          ),
+        return Material(
+          elevation: 1, // Subtle elevation for depth
+          borderRadius: BorderRadius.circular(4), // Small rounded corners
           child: LetterTapedWidget(index: index),
         );
       },
