@@ -36,25 +36,91 @@ class Observer extends ChangeNotifier {
   /// Length of the word to be guessed.
   int wordLength;
 
-  // Survival Mode attributes
-  bool isHardMode = false; // Default to easy mode
+  /// Indicates whether the game is in hard mode for Survival Mode.
+  ///
+  /// Defaults to `false` (easy mode). If set to `true`, the game becomes more challenging.
+  bool isHardMode = false;
+
+  /// Current word length in Survival Mode.
+  ///
+  /// Defaults to 3. The word length increases as the player progresses.
   int survivalWordLength = 3;
+
+  /// Current attempt limit in Survival Mode.
+  ///
+  /// Defaults to 10. The number of attempts decreases as the word length increases.
   int survivalAttempts = 10;
+
+  /// Number of consecutive correct guesses made in Survival Mode.
+  ///
+  /// Used to determine when to increase the word length and adjust the attempt limit.
   int consecutiveCorrectGuesses = 0;
+
+  /// Total score achieved in Survival Mode.
+  ///
+  /// The score increases by 1 for every correct guess.
   int score = 0;
+
+  /// Indicates whether the game is currently in Survival Mode.
+  ///
+  /// Defaults to `false`. Set to `true` when Survival Mode is enabled.
   bool isSurvivalMode = false;
 
-  /* Duel Mode attributes */
+
+  /// Indicates whether the game is in Duel Mode.
+  ///
+  /// Defaults to `false`. Set to `true` when Duel Mode is enabled.
   bool isDuelMode = false;
+
+  /// Total number of rounds in Duel Mode.
+  ///
+  /// Defaults to 0. The total number of rounds is defined when the mode is initialized.
   int totalRounds = 0;
+
+  /// Current round in Duel Mode.
+  ///
+  /// Starts at 1 and increments after both players complete their turns.
   int currentRound = 1;
+
+  /// Score of Player 1 in Duel Mode.
+  ///
+  /// Increments by 1 for each correct guess by Player 1.
   int player1Score = 0;
+
+  /// Score of Player 2 in Duel Mode.
+  ///
+  /// Increments by 1 for each correct guess by Player 2.
   int player2Score = 0;
+
+  /// Indicates whether it is Player 1's turn in Duel Mode.
+  ///
+  /// Defaults to `true`. Alternates after each turn.
   bool isPlayer1Turn = true;
+
+  /// Secret word set by Player 1 for Player 2 to guess in Duel Mode.
+  ///
+  /// This is `null` until Player 1 sets the word.
   String? player1SecretWord;
+
+  /// Secret word set by Player 2 for Player 1 to guess in Duel Mode.
+  ///
+  /// This is `null` until Player 2 sets the word.
   String? player2SecretWord;
-  bool isSettingSecretWord = true; // Default to true for the first player
+
+  /// Indicates whether a player is setting the secret word in Duel Mode.
+  ///
+  /// Defaults to `true` for the first player at the beginning of the game.
+  /// Ensures that a player sets a word before guessing starts.
+  bool isSettingSecretWord = true;
+
+  /// Indicates whether Player 1 has correctly guessed Player 2's secret word.
+  ///
+  /// Defaults to `false`. Set to `true` if Player 1 guesses correctly.
   bool isPlayer1GuessedCorrectly = false;
+
+  /// Indicates whether Player 2 has correctly guessed Player 1's secret word.
+  ///
+  /// Defaults to `false`. Set to `true` if Player 2 guesses correctly.
   bool isPlayer2GuessedCorrectly = false;
 
   /// Creates an `Observer` instance with specified game settings.
@@ -88,12 +154,27 @@ class Observer extends ChangeNotifier {
  /* Survie Mode  */
 
   /// Starts the Survival Mode with default settings.
+  ///
+  /// This method:
+  /// - Sets the `isSurvivalMode` flag to `true`.
+  /// - Resets the game state for Survival Mode by calling `resetSurvivalGame`.
+  /// - Logs a message indicating the start of Survival Mode.
   void startSurvivalMode() {
     print("Starting Survival Mode");
     isSurvivalMode = true;
     resetSurvivalGame();
   }
+
   /// Resets the game attributes for Survival Mode.
+  ///
+  /// This method:
+  /// - Resets the `survivalWordLength` to 3 (starting word length).
+  /// - Resets the `survivalAttempts` to 10 (starting number of attempts).
+  /// - Clears `consecutiveCorrectGuesses` and `score` to start fresh.
+  /// - Sets `hasLost` to `false` to indicate the game is not lost.
+  /// - Updates the `wordLength` and `maxAttempts` to match the current survival mode settings.
+  /// - Calls `_setNewSurvivalWord` to generate a new word for the player to guess.
+  /// - Notifies listeners to update the UI.
   void resetSurvivalGame() {
     survivalWordLength = 3;
     survivalAttempts = 10;
@@ -105,14 +186,23 @@ class Observer extends ChangeNotifier {
     _setNewSurvivalWord();
     notifyListeners();
   }
+
   /// Sets a new word for Survival Mode.
+  ///
+  /// This asynchronous method:
+  /// - Retrieves a random word with a length equal to `survivalWordLength` by calling `getRandomWord`.
+  /// - Logs the retrieved word for debugging purposes.
+  /// - Sets the `winningWord` to the retrieved word (converted to uppercase) or defaults to "APPLE" if no word is retrieved.
+  /// - Updates the `loading` flag to `false` to indicate that the word has been set.
+  /// - Notifies listeners to update the UI with the new word.
   Future<void> _setNewSurvivalWord() async {
     final word = await getRandomWord(wordLength: survivalWordLength);
-    print("worrrrrrrrrrrrrrrd $word" );
+    print("survival word is ---------> $word");
     winningWord = word?.toUpperCase() ?? "APPLE";
     loading = false;
     notifyListeners();
   }
+
   /// Increments the survival level in Survival Mode by increasing word length and reducing attempts.
   ///
   /// This method applies the following progression principle:
@@ -170,7 +260,13 @@ class Observer extends ChangeNotifier {
     }
   }
 
-  // Helper method to reset the grid state in Survival Mode
+  /// Resets the grid state for a new level in Survival Mode.
+  ///
+  /// This method:
+  /// - Resets `currentNode` and `currentRow` to 0, preparing for the new level.
+  /// - Clears the `letterTaped` list, removing any previously entered letters.
+  /// - Sets `hasWon` and `hasLost` to `false` to start fresh.
+  /// - Updates the `loading` flag to `false` to indicate the grid is ready.
   void resetSurvivalGrid() {
     print("Resetting grid state for new level in Survival Mode");
     currentNode = 0;
@@ -185,7 +281,14 @@ class Observer extends ChangeNotifier {
   /* -----------------------------------------------------------------------------------  */
   /* Classic Mode  */
 
-  // Set a new word for Classic Mode
+  /// Sets a new word for Classic Mode.
+  ///
+  /// This asynchronous method:
+  /// - Retrieves a random word with a length equal to `wordLength` by calling `getRandomWord`.
+  /// - Logs the retrieved word for debugging purposes.
+  /// - Sets the `winningWord` to the retrieved word (converted to uppercase) or defaults to "APPLE" if no word is retrieved.
+  /// - Updates the `loading` flag to `false` to indicate that the word has been set.
+  /// - Notifies listeners to update the UI with the new word.
   Future<void> _setWinningWord() async {
     final word = await getRandomWord(wordLength: wordLength);
     print("classic word '''''''''''' $word");
@@ -194,7 +297,13 @@ class Observer extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Reset game based on the mode
+
+  /// Resets the game based on the active mode.
+  ///
+  /// This method:
+  /// - Calls `resetSurvivalGame` if the game is in Survival Mode (`isSurvivalMode` is `true`).
+  /// - Calls `_resetClassicGame` if the game is in Classic Mode (`isSurvivalMode` is `false`).
+  /// - Notifies listeners to update the UI after resetting the game state.
   void resetGame() {
     if (isSurvivalMode) {
       resetSurvivalGame();
@@ -204,7 +313,14 @@ class Observer extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Classic Mode game reset
+  /// Resets the game state for Classic Mode.
+  ///
+  /// This method:
+  /// - Resets `currentNode` and `currentRow` to 0 to start a new game.
+  /// - Clears the `letterTaped` list, removing any previous guesses.
+  /// - Sets `hasWon` and `hasLost` to `false` to reset the win/loss state.
+  /// - Sets `loading` to `true` while a new word is being retrieved.
+  /// - Calls `_setWinningWord` to generate a new word for the game.
   void _resetClassicGame() {
     currentNode = 0;
     currentRow = 0;
@@ -215,7 +331,20 @@ class Observer extends ChangeNotifier {
     _setWinningWord();
   }
 
-  // Handle key taps for both modes
+
+  /// Handles key taps during the game for all modes (Classic, Survival, Duel).
+  ///
+  /// This method processes three types of input:
+  /// - `'ENTER'`: Submits the current guess if the row is complete.
+  ///   - Calls `_checkGuessDuel` if the game is in Duel Mode.
+  ///   - Calls `_checkGuess` for Classic or Survival Mode.
+  /// - `'DEL'`: Deletes the last entered character if there are characters in the current row.
+  /// - Any other value: Adds the character to the current row if the row is not yet full.
+  ///
+  /// Parameters:
+  /// - [value]: The key value tapped by the player (`'ENTER'`, `'DEL'`, or a letter).
+  ///
+  /// After processing the input, this method notifies listeners to update the UI.
   void setKeyTapped({required String value}) {
     if (value == 'ENTER') {
       if (currentNode == wordLength * (currentRow + 1)) {
@@ -239,7 +368,22 @@ class Observer extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Check guess and determine win or loss
+
+  /// Checks the player's guess and determines if they win or lose in Classic or Survival Mode.
+  ///
+  /// This method:
+  /// - Constructs the `guessedWord` by combining the letters from the current row.
+  /// - Logs the guessed word and the winning word for debugging purposes.
+  /// - Checks the following conditions:
+  ///   - If the `winningWord` is not set, logs an error and exits.
+  ///   - If the `guessedWord` matches the `winningWord`:
+  ///     - Marks the game as won using `_markWin`.
+  ///     - If in Survival Mode, calls `incrementSurvivalLevel` to proceed to the next level.
+  ///   - If the `guessedWord` is incorrect:
+  ///     - Marks incorrect guesses using `_markIncorrect`.
+  ///     - If the player runs out of attempts (`currentRow >= maxAttempts`), sets `hasLost` to `true`.
+  /// - Saves the game state using `saveCompletedGame` if the game is won or lost.
+  /// - Notifies listeners to update the UI with the latest state.
   void _checkGuess() {
     final guessedWord = letterTaped
         .skip(currentRow * wordLength)
@@ -274,7 +418,16 @@ class Observer extends ChangeNotifier {
 
     notifyListeners(); // Notify UI of changes
   }
-  // Mark win for both modes
+
+  /// Marks the game as won by updating the letter statuses for the winning row.
+  ///
+  /// Parameters:
+  /// - [targetWord]: The correct word that was guessed.
+  ///
+  /// This method:
+  /// - Iterates through each letter in the `targetWord`.
+  /// - Updates the `status` of the corresponding letters in `letterTaped` to `LetterState.correct`.
+  /// - Sets `hasWon` to `true` to indicate the game has been won.
   void _markWin(String targetWord) {
     for (int i = 0; i < targetWord.length; i++) {
       final index = currentRow * wordLength + i;
@@ -282,7 +435,22 @@ class Observer extends ChangeNotifier {
     }
     hasWon = true; // Mark the game as won
   }
-  // Mark incorrect guesses
+
+  /// Marks incorrect guesses by updating the letter statuses for the guessed word.
+  ///
+  /// Parameters:
+  /// - [guessedWord]: The word guessed by the player.
+  /// - [targetWord]: The correct word to compare against.
+  ///
+  /// This method:
+  /// - Iterates through each letter in the `guessedWord`.
+  /// - For each letter:
+  ///   - If the letter exists in the `targetWord`:
+  ///     - Sets the `status` to `LetterState.correct` if the position matches.
+  ///     - Sets the `status` to `LetterState.contains` if the position does not match.
+  ///   - If the letter does not exist in the `targetWord`, sets the `status` to `LetterState.incorrect`.
+  /// - Increments `currentRow` after the guess.
+  /// - If the player has exhausted all attempts (`currentRow >= maxAttempts`), sets `hasLost` to `true`.
   void _markIncorrect(String guessedWord, String targetWord) {
     for (int i = 0; i < guessedWord.length; i++) {
       final guessedLetter = guessedWord[i];
@@ -304,6 +472,7 @@ class Observer extends ChangeNotifier {
       hasLost = true; // Mark as lost if attempts are exhausted
     }
   }
+
 
   /* ----------------------------------------------------------------------------------- */
 /* Dual Mode */
@@ -336,7 +505,12 @@ class Observer extends ChangeNotifier {
 
   /// Resets the game state for the next turn in Duel Mode.
   ///
-  /// Clears the board, resets flags, and prepares the game for the next turn.
+  /// This method:
+  /// - Resets `currentNode` and `currentRow` to 0, preparing for the new turn.
+  /// - Clears the `letterTaped` list to remove any previously entered letters.
+  /// - Sets `hasWon` and `hasLost` to `false`, resetting the win/loss state.
+  /// - Sets `loading` to `false`, as a new word is not required for Duel Mode turns.
+  /// - Notifies listeners to update the UI for the next turn.
   void resetGameForNextTurn() {
     currentNode = 0;
     currentRow = 0;
@@ -347,10 +521,20 @@ class Observer extends ChangeNotifier {
     notifyListeners();
   }
 
+
   /// Sets the secret word for the opponent in Duel Mode.
   ///
+  /// This method:
+  /// - Allows the current player to set a secret word for their opponent.
+  /// - Updates `player2SecretWord` if it's Player 1's turn.
+  /// - Updates `player1SecretWord` if it's Player 2's turn.
+  /// - Logs the action for debugging purposes.
+  /// - Sets `isSettingSecretWord` to `false` after the word has been set, indicating
+  ///   that the word-setting phase is complete.
+  /// - Notifies listeners to update the UI with the updated state.
+  ///
   /// Parameters:
-  /// - [word]: The word set by the current player for their opponent.
+  /// - [word]: The word set by the current player for their opponent to guess.
   void setSecretWordForOpponent(String word) {
     if (isPlayer1Turn) {
       player2SecretWord = word; // Player 1 sets the word for Player 2
@@ -364,6 +548,7 @@ class Observer extends ChangeNotifier {
     notifyListeners();
   }
 
+
   /// Checks if the Duel Mode game is over.
   ///
   /// Returns `true` if the current round exceeds the total number of rounds; otherwise, `false`.
@@ -372,8 +557,18 @@ class Observer extends ChangeNotifier {
   }
   /// Handles the transition to the next turn in Duel Mode.
   ///
-  /// Checks the results of the current round, updates scores, and alternates turns.
-  /// Resets the game state for the next turn if the game is not over.
+  /// This method:
+  /// - Checks the results of the current round when both players have taken their turns:
+  ///   - If both players guessed correctly, increments `currentRound` and logs the outcome.
+  ///   - If both players failed, logs that the round is a tie.
+  ///   - If only one player guessed correctly, logs the winner of the round.
+  /// - Resets the round results (`isPlayer1GuessedCorrectly` and `isPlayer2GuessedCorrectly`) for the next round.
+  /// - Checks if the game is over by comparing `currentRound` to `totalRounds`:
+  ///   - If the game is over, logs the game-over message and updates the UI without proceeding further.
+  /// - Toggles the player's turn by switching `isPlayer1Turn`.
+  /// - Sets `isSettingSecretWord` to `true`, prompting the next player to set their secret word.
+  /// - Calls `resetGameForNextTurn` to reset the game state for the next turn.
+  /// - Notifies listeners to update the UI with the new state.
   void transitionToNextTurn() {
     if (!isPlayer1Turn) {
       // Check round results when both players have taken their turns
@@ -406,10 +601,21 @@ class Observer extends ChangeNotifier {
     resetGameForNextTurn(); // Reset the state for the next turn
     notifyListeners();
   }
-  /// Checks the player's guess against the opponent's secret word.
+
+  /// Checks the player's guess against the opponent's secret word in Duel Mode.
   ///
-  /// Evaluates the guessed word and marks it as correct or incorrect.
-  /// Proceeds to the next turn if the maximum attempts are reached or the word is guessed.
+  /// This method:
+  /// - Constructs the `guessedWord` based on the letters tapped in the current row.
+  /// - Retrieves the correct `targetWord` for the current turn:
+  ///   - Uses `player2SecretWord` if it is Player 1's turn.
+  ///   - Uses `player1SecretWord` if it is Player 2's turn.
+  /// - If the `targetWord` is not set or empty, logs an error and exits.
+  /// - If the `guessedWord` matches the `targetWord`:
+  ///   - Calls `_markCorrectForDuel` to handle a correct guess.
+  /// - If the `guessedWord` is incorrect:
+  ///   - Calls `_markIncorrectForDuel` to handle an incorrect guess.
+  ///   - Logs whether the player has remaining attempts.
+  /// - Notifies listeners to update the UI.
   void _checkGuessDuel() {
     final guessedWord = letterTaped
         .skip(currentRow * wordLength)
@@ -442,6 +648,20 @@ class Observer extends ChangeNotifier {
 
     notifyListeners(); // Notify UI of changes
   }
+
+  /// Handles a correct guess in Duel Mode by marking the letters as correct and updating scores.
+  ///
+  /// This method:
+  /// - Updates the `status` of all letters in the current row to `LetterState.correct`.
+  /// - Increments the score for the current player:
+  ///   - Increments `player1Score` if it is Player 1's turn and sets `isPlayer1GuessedCorrectly` to `true`.
+  ///   - Increments `player2Score` if it is Player 2's turn and sets `isPlayer2GuessedCorrectly` to `true`.
+  /// - Marks the turn as won by setting `hasWon` to `true`.
+  /// - Calls `transitionToNextTurn` to proceed to the next turn.
+  /// - Notifies listeners to update the UI.
+  ///
+  /// Parameters:
+  /// - [targetWord]: The correct word guessed by the player.
   void _markCorrectForDuel(String targetWord) {
     // Highlight correct letters in the UI
     for (int i = 0; i < targetWord.length; i++) {
@@ -463,6 +683,26 @@ class Observer extends ChangeNotifier {
     transitionToNextTurn(); // Move to the next turn
     notifyListeners(); // Update the UI
   }
+
+  /// Handles an incorrect guess in Duel Mode by marking the letters and updating the turn state.
+  ///
+  /// This method:
+  /// - Updates the `status` of each letter in the `guessedWord`:
+  ///   - Sets `LetterState.correct` if the letter is in the correct position.
+  ///   - Sets `LetterState.contains` if the letter exists in the `targetWord` but in the wrong position.
+  ///   - Sets `LetterState.incorrect` if the letter does not exist in the `targetWord`.
+  /// - Increments `currentRow` to move to the next attempt.
+  /// - If the maximum attempts are reached:
+  ///   - Sets `isPlayer1GuessedCorrectly` or `isPlayer2GuessedCorrectly` to `false` based on the current turn.
+  ///   - Logs the failure for the current player.
+  ///   - Marks the turn as lost by setting `hasLost` to `true`.
+  ///   - Calls `transitionToNextTurn` to proceed to the next turn.
+  /// - Logs whether the player has remaining attempts.
+  /// - Notifies listeners to update the UI.
+  ///
+  /// Parameters:
+  /// - [guessedWord]: The word guessed by the player.
+  /// - [targetWord]: The correct word to compare against.
   void _markIncorrectForDuel(String guessedWord, String targetWord) {
     // Highlight incorrect or partially correct letters in the UI
     for (int i = 0; i < guessedWord.length; i++) {
@@ -504,10 +744,25 @@ class Observer extends ChangeNotifier {
 
 
 
+
   /* -----------------------------------------------------------------------------------  */
   /* Save and Stats   */
 
-  // Save completed game
+  /// Saves the completed game to the database.
+  ///
+  /// This method:
+  /// - Creates a new `PartieEntity` with details about the game, such as:
+  ///   - `secretWord`: The word to guess in the game.
+  ///   - `date`: The date and time when the game was completed.
+  ///   - `attempts`: The number of attempts taken in the game.
+  ///   - `guessedLetters`: The letters guessed during the game.
+  ///   - `gameMode`: The mode of the game (Classic, Survival, or Duel).
+  ///   - `wordLength`: The length of the word in the game.
+  /// - Inserts the entity into the database using `_partieDAO.insertPartie`.
+  /// - Logs an error if the save operation fails.
+  ///
+  /// Parameters:
+  /// - [won]: Indicates whether the game was won (`true`) or lost (`false`).
   Future<void> saveCompletedGame(bool won) async {
     try {
       final partie = PartieEntity(
@@ -525,21 +780,38 @@ class Observer extends ChangeNotifier {
     }
   }
 
+  /// Retrieves all saved games from the database.
+  ///
+  /// Returns:
+  /// - A `Future` containing a list of `PartieEntity` objects.
   Future<List<PartieEntity>> getParties() async {
     return await _partieDAO.getParties();
   }
 
+  /// Calculates the total number of games played.
+  ///
+  /// Returns:
+  /// - A `Future` containing the total number of games as an integer.
   Future<int> get totalGamesPlayed async {
     final games = await _partieDAO.getParties();
     return games.length;
   }
 
+  /// Calculates the win percentage across all games.
+  ///
+  /// Returns:
+  /// - A `Future` containing the win percentage as a double.
   Future<double> get winPercentage async {
     final games = await _partieDAO.getParties();
     final wonGames = games.where((partie) => partie.attempts <= maxAttempts).length;
     return (wonGames / games.length) * 100;
   }
 
+  /// Calculates the average percentage of attempts used per game.
+  ///
+  /// Returns:
+  /// - A `Future` containing the average percentage as a double.
+  /// - Returns 0.0 if no games have been played.
   Future<double> get averageAttempts async {
     final games = await _partieDAO.getParties();
     if (games.isEmpty) return 0.0;
@@ -551,22 +823,37 @@ class Observer extends ChangeNotifier {
 
     return totalPercentage / games.length;
   }
+
+  /// Calculates the total number of games won.
+  ///
+  /// Returns:
+  /// - A `Future` containing the total number of wins as an integer.
   Future<int> get totalWins async {
     final games = await _partieDAO.getParties();
     return games.where((partie) => partie.attempts <= maxAttempts).length; // Won in allowed attempts
   }
 
+  /// Calculates the total number of games lost.
+  ///
+  /// Returns:
+  /// - A `Future` containing the total number of losses as an integer.
   Future<int> get totalLosses async {
     final games = await _partieDAO.getParties();
     final wonGames = games.where((partie) => partie.attempts <= maxAttempts).length;
     return games.length - wonGames; // Losses = total games - wins
   }
 
+  /// Retrieves a list of games filtered by the specified game mode.
+  ///
+  /// Parameters:
+  /// - [mode]: The game mode to filter by (e.g., 'Classic', 'Survival', 'Duel').
+  ///
+  /// Returns:
+  /// - A `Future` containing a list of `PartieEntity` objects that match the specified mode.
   Future<List<PartieEntity>> getFilteredGames({required String mode}) async {
     final games = await _partieDAO.getParties();
     return games.where((partie) => partie.gameMode == mode).toList(); // Filter by mode
   }
-
 
 
 
