@@ -94,15 +94,16 @@ Here’s a brief overview of the project structure:
 
 ## 🌟 Screenshots
 
-_Include relevant screenshots of your app (e.g., HomeScreen, Classic Mode, Survival Mode)._
+Below are some screenshots of the app:
 
-![Screenshot_2024-11-17-19-03-50-15_9d28563678e7b0ada86d1b0c1fcf40c5](https://github.com/user-attachments/assets/db1c4ac2-5b33-46d9-8e99-cb94b414d101)
-![Screenshot_2024-11-17-01-41-48-56_9d28563678e7b0ada86d1b0c1fcf40c5](https://github.com/user-attachments/assets/de942416-a28e-480c-922e-9388d15fe5c9)
-![Screenshot_2024-11-17-23-09-58-95_9d28563678e7b0ada86d1b0c1fcf40c5](https://github.com/user-attachments/assets/51013853-740a-4f6d-a7eb-624a37360411)
-![Screenshot_2024-11-17-23-09-06-38_9d28563678e7b0ada86d1b0c1fcf40c5](https://github.com/user-attachments/assets/5a0a7c3d-4618-49f8-b2c9-141828bfbc6c)
-![Screenshot_2024-11-17-22-57-36-18_9d28563678e7b0ada86d1b0c1fcf40c5](https://github.com/user-attachments/assets/0598bfb0-acea-4e28-8db7-02155b327f5a)
-![Screenshot_2024-11-17-22-04-31-51_9d28563678e7b0ada86d1b0c1fcf40c5](https://github.com/user-attachments/assets/4d65a4d4-932c-4cfa-842f-eb9e9802843f)
-
+<p align="center">
+  
+  <img src="https://github.com/user-attachments/assets/0598bfb0-acea-4e28-8db7-02155b327f5a" alt="Screenshot 1" width="20%" />
+  <img src="https://github.com/user-attachments/assets/db1c4ac2-5b33-46d9-8e99-cb94b414d101" alt="Screenshot 2" width="20%" />
+  <img src="https://github.com/user-attachments/assets/51013853-740a-4f6d-a7eb-624a37360411" alt="Screenshot 3" width="20%" />
+  <img src="https://github.com/user-attachments/assets/5a0a7c3d-4618-49f8-b2c9-141828bfbc6c" alt="Screenshot 4" width="20%" />
+  <img src="https://github.com/user-attachments/assets/4d65a4d4-932c-4cfa-842f-eb9e9802843f" alt="Screenshot 5" width="20%" />
+</p>
 
 ---
 
