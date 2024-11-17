@@ -5,7 +5,10 @@ import 'survival_game_screen.dart';
 import 'stats_screen.dart'; // Import the StatsScreen
 import 'package:wordle/components/rounds_dialogue_duel.dart';
 
+/// The home screen of the Wordle game.
+/// Displays a menu with options to start different game modes and view statistics.
 class HomeScreen extends StatelessWidget {
+  /// Creates the `HomeScreen` widget.
   const HomeScreen({Key? key}) : super(key: key);
 
   @override
@@ -26,9 +29,20 @@ class HomeScreen extends StatelessWidget {
           centerTitle: true,
           backgroundColor: const Color(0xFFFAF3E0), // Soft Cream
           elevation: 0,
-          iconTheme: const IconThemeData(color: Color(0xFF6B8E23)),
           toolbarHeight: 100, // Larger AppBar height
+          iconTheme: const IconThemeData(color: Color(0xFF6B8E23)),
           actions: [
+            IconButton(
+              icon: const Icon(
+                Icons.info_outline,
+                color: Color(0xFF6B8E23), // Olive Green
+                size: 30,
+              ),
+              onPressed: () {
+                _showGameInfo(context); // Show explanation dialog
+              },
+              tooltip: 'About Game Modes',
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: FloatingActionButton(
@@ -53,9 +67,6 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ],
-
-
-
         ),
       ),
       body: Container(
@@ -140,6 +151,97 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
+
+  void _showGameInfo(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(
+              color: Color(0xFFFAF3E0), // Soft Cream
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Game Modes & About',
+                  style: TextStyle(
+                    fontFamily: 'Raleway',
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Color(0xFF6B8E23),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: const [
+                        Text(
+                          '🟢 Partie Classic\n'
+                              '- Play the original Wordle game with fixed attempts.\n\n'
+                              '🟠 Partie Survival\n'
+                              '- Keep playing until you fail. Word length and difficulty increase with every correct guess.\n\n'
+                              '🔵 Partie Dual\n'
+                              '- Take turns with your friends setting secret words and guessing them.\n'
+                              '- The winner is decided after a set number of rounds.\n\n'
+                              '📊 View Stats\n'
+                              '- Check your total games played, win percentage, average attempts, and more detailed statistics.',
+                          style: TextStyle(
+                            fontFamily: 'Raleway',
+                            fontSize: 16,
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        Text(
+                          '📜 Developed by:\n'
+                              'Mosaab Dehane \n'
+                              ,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: 'Raleway',
+                            fontSize: 14,
+                            fontStyle: FontStyle.italic,
+                            color: Color(0xFF6B8E23),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6B8E23),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text(
+                    'Close',
+                    style: TextStyle(
+                      fontFamily: 'Raleway',
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
 
   Widget _buildGameModeCard(
       BuildContext context, {

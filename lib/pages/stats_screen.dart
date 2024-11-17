@@ -2,6 +2,17 @@ import 'package:flutter/material.dart';
 import '../dao/partie_dao.dart';
 import '../entities/partie.dart';
 
+
+/// A screen to display game statistics and completed game sessions.
+///
+/// The `StatsScreen` widget fetches saved game data from the database using `PartieDAO`
+/// and presents the data in a paginated list. Users can also view the guessed letters
+/// in a grid format for individual games.
+///
+/// Features:
+/// - Pagination to display a limited number of games per page.
+/// - Visual representation of guessed letters in a dialog.
+/// - Displays metadata for each game, such as word length, attempts, date, and mode.
 class StatsScreen extends StatefulWidget {
   const StatsScreen({Key? key}) : super(key: key);
 
@@ -20,6 +31,15 @@ class _StatsScreenState extends State<StatsScreen> {
     _partiesFuture = PartieDAO().getParties(); // Fetch saved games on init
   }
 
+  /// Displays a grid of guessed letters for a specific game.
+  ///
+  /// Parameters:
+  /// - [context]: The build context.
+  /// - [guessedLetters]: A list of guessed letters.
+  /// - [wordLength]: The length of the word for the game.
+  ///
+  /// Opens a dialog showing the guessed letters in a grid format, where the
+  /// number of columns corresponds to the word length.
   void _showGuessedLettersGrid(BuildContext context, List<String> guessedLetters, int wordLength) {
     final gridSize = guessedLetters.length ~/ wordLength; // Calculate grid size
 

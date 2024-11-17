@@ -1,14 +1,31 @@
 import 'package:flutter/material.dart';
 import 'partie_page.dart';
 
+/// A configuration screen for starting a Classic Wordle game.
+///
+/// The `ClassicGameScreen` widget allows users to adjust the game settings
+/// (word length and number of attempts) using sliders. Once configured,
+/// users can start the game by navigating to the `PartiePage`.
+///
+/// This widget is designed for a classic Wordle gameplay experience.
 class ClassicGameScreen extends StatefulWidget {
+  /// Creates a `ClassicGameScreen` widget.
+  const ClassicGameScreen({Key? key}) : super(key: key);
+
   @override
   _ClassicGameScreenState createState() => _ClassicGameScreenState();
 }
 
 class _ClassicGameScreenState extends State<ClassicGameScreen> {
-  int wordLength = 5; // Default value
-  int attempts = 6; // Default value
+  /// The length of the word to guess.
+  ///
+  /// Defaults to `5`.
+  int wordLength = 5;
+
+  /// The number of attempts allowed.
+  ///
+  /// Defaults to `6`.
+  int attempts = 6;
 
   @override
   Widget build(BuildContext context) {
