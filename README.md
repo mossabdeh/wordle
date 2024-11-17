@@ -96,12 +96,13 @@ Here’s a brief overview of the project structure:
 
 _Include relevant screenshots of your app (e.g., HomeScreen, Classic Mode, Survival Mode)._
 
-![Screenshot_2024-11-17-19-03-50-15_9d28563678e7b0ada86d1b0c1fcf40c5.jpg](..%2F..%2FDownloads%2FScreenshot_2024-11-17-19-03-50-15_9d28563678e7b0ada86d1b0c1fcf40c5.jpg)
-![Screenshot_2024-11-17-22-04-31-51_9d28563678e7b0ada86d1b0c1fcf40c5.jpg](..%2F..%2FDownloads%2FScreenshot_2024-11-17-22-04-31-51_9d28563678e7b0ada86d1b0c1fcf40c5.jpg)
-![Screenshot_2024-11-17-22-57-36-18_9d28563678e7b0ada86d1b0c1fcf40c5.jpg](..%2F..%2FDownloads%2FScreenshot_2024-11-17-22-57-36-18_9d28563678e7b0ada86d1b0c1fcf40c5.jpg)
-![Screenshot_2024-11-17-23-09-06-38_9d28563678e7b0ada86d1b0c1fcf40c5.jpg](..%2F..%2FDownloads%2FScreenshot_2024-11-17-23-09-06-38_9d28563678e7b0ada86d1b0c1fcf40c5.jpg)
-![Screenshot_2024-11-17-23-09-58-95_9d28563678e7b0ada86d1b0c1fcf40c5.jpg](..%2F..%2FDownloads%2FScreenshot_2024-11-17-23-09-58-95_9d28563678e7b0ada86d1b0c1fcf40c5.jpg)
-![Screenshot_2024-11-17-01-41-48-56_9d28563678e7b0ada86d1b0c1fcf40c5.jpg](..%2F..%2FDownloads%2FScreenshot_2024-11-17-01-41-48-56_9d28563678e7b0ada86d1b0c1fcf40c5.jpg)
+![Screenshot_2024-11-17-19-03-50-15_9d28563678e7b0ada86d1b0c1fcf40c5](https://github.com/user-attachments/assets/db1c4ac2-5b33-46d9-8e99-cb94b414d101)
+![Screenshot_2024-11-17-01-41-48-56_9d28563678e7b0ada86d1b0c1fcf40c5](https://github.com/user-attachments/assets/de942416-a28e-480c-922e-9388d15fe5c9)
+![Screenshot_2024-11-17-23-09-58-95_9d28563678e7b0ada86d1b0c1fcf40c5](https://github.com/user-attachments/assets/51013853-740a-4f6d-a7eb-624a37360411)
+![Screenshot_2024-11-17-23-09-06-38_9d28563678e7b0ada86d1b0c1fcf40c5](https://github.com/user-attachments/assets/5a0a7c3d-4618-49f8-b2c9-141828bfbc6c)
+![Screenshot_2024-11-17-22-57-36-18_9d28563678e7b0ada86d1b0c1fcf40c5](https://github.com/user-attachments/assets/0598bfb0-acea-4e28-8db7-02155b327f5a)
+![Screenshot_2024-11-17-22-04-31-51_9d28563678e7b0ada86d1b0c1fcf40c5](https://github.com/user-attachments/assets/4d65a4d4-932c-4cfa-842f-eb9e9802843f)
+
 
 ---
 
@@ -114,9 +115,7 @@ For help with Flutter development, check out these resources:
 
 ---
 
-## 📄 License
 
-This project is licensed under the MIT License. See the `LICENSE` file for more details.
 
 ---
 
@@ -137,6 +136,7 @@ The documentation will be generated in the `doc/` folder and can be opened in an
 
 For more details about DartDoc, visit [Dart Documentation](https://dart.dev/tools/dartdoc).
 
-![wordleDocs.PNG](..%2F..%2FDesktop%2FwordleDocs.PNG)
+![wordleDocs](https://github.com/user-attachments/assets/c3643231-3c81-4925-8f1b-063c4aff2a5f)
+
 
 ---
