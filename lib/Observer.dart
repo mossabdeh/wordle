@@ -6,16 +6,34 @@ import 'package:wordle/services/loadJson.dart';
 import 'dao/partie_dao.dart';
 import 'entities/partie.dart';
 
+
+/// Observer class that manages the state and logic of the Wordle-like game.
+///
+/// This class supports multiple modes, including:
+/// - Classic Mode: Standard Wordle gameplay.
+/// - Survival Mode: Progressive gameplay with increasing difficulty.
+/// - Duel Mode: Multiplayer mode where players alternate guessing.
+/// It also provides methods for saving and retrieving game statistics.
 class Observer extends ChangeNotifier {
+  /// Data access object for interacting with the database.
   final PartieDAO _partieDAO = PartieDAO();
+  /// Current position of the cursor in the grid.
   int currentNode = 0;
+  /// Current row being edited in the grid.
   int currentRow = 0;
+  /// List of letters tapped during the game.
   List<Letter> letterTaped = [];
+  /// The word to be guessed.
   late String winningWord;
+  /// Indicates whether data is being loaded.
   bool loading = true;
+  /// Indicates whether the game is won.
   bool hasWon = false;
+  /// Indicates whether the game is lost.
   bool hasLost = false;
+  /// Maximum number of attempts allowed in the current game.
   int maxAttempts;
+  /// Length of the word to be guessed.
   int wordLength;
 
   // Survival Mode attributes
@@ -39,7 +57,13 @@ class Observer extends ChangeNotifier {
   bool isPlayer1GuessedCorrectly = false;
   bool isPlayer2GuessedCorrectly = false;
 
-
+  /// Creates an `Observer` instance with specified game settings.
+  ///
+  /// Parameters:
+  /// - [wordLength]: Length of the word to guess.
+  /// - [maxAttempts]: Maximum attempts allowed in the game.
+  /// - [isSurvivalMode]: Whether the game is in survival mode.
+  /// - [isDuelMode]: Whether the game is in duel mode.
   Observer({
     required this.wordLength,
     required this.maxAttempts,
@@ -47,7 +71,7 @@ class Observer extends ChangeNotifier {
     this.isDuelMode = false,
     int? rounds,  // Optional parameter for duel mode
   }) {
-    print("àààààààààààààààààààààààààààààà   $isDuelMode");
+    print("--------------------->   $isDuelMode");
     if (isSurvivalMode) {
       startSurvivalMode();
     } else if (isDuelMode) {
@@ -63,14 +87,13 @@ class Observer extends ChangeNotifier {
 
  /* Survie Mode  */
 
-
+  /// Starts the Survival Mode with default settings.
   void startSurvivalMode() {
     print("Starting Survival Mode");
     isSurvivalMode = true;
     resetSurvivalGame();
   }
-
-  // Start or reset survival mode attributes
+  /// Resets the game attributes for Survival Mode.
   void resetSurvivalGame() {
     survivalWordLength = 3;
     survivalAttempts = 10;
@@ -82,7 +105,7 @@ class Observer extends ChangeNotifier {
     _setNewSurvivalWord();
     notifyListeners();
   }
-  // Set a new word for Survival Mode
+  /// Sets a new word for Survival Mode.
   Future<void> _setNewSurvivalWord() async {
     final word = await getRandomWord(wordLength: survivalWordLength);
     print("worrrrrrrrrrrrrrrd $word" );
@@ -90,37 +113,63 @@ class Observer extends ChangeNotifier {
     loading = false;
     notifyListeners();
   }
-
-  // Increment survival level for Survival Mode
+  /// Increments the survival level in Survival Mode by increasing word length and reducing attempts.
+  ///
+  /// This method applies the following progression principle:
+  /// - For every `wordLength ÷ 2` consecutive correct guesses:
+  ///   - **Word length** increases by 1.
+  ///   - **Number of attempts** decreases by 1 (minimum of 3 attempts).
+  ///   - Consecutive correct guesses are reset to 0.
+  ///
+  /// The method then updates the game state with the new word length and attempts,
+  /// generates a new word, and resets the grid for the next level.
+  ///
+  /// Example:
+  /// ```dart
+  /// // Initial state:
+  /// wordLength = 4, survivalAttempts = 10, consecutiveCorrectGuesses = 0
+  ///
+  /// // After 2 correct guesses (`4 ÷ 2`):
+  /// survivalWordLength = 5, survivalAttempts = 9
+  /// consecutiveCorrectGuesses = 0
+  /// ```
+  ///
+  /// This method only operates if `isSurvivalMode` is enabled. If not, it logs a message and exits.
   void incrementSurvivalLevel() {
     if (isSurvivalMode) {
       print("Survival Mode - incrementing level");
-      score++;  // Increase the score for each correct guess
+
+      // Increment score and consecutive correct guesses
+      score++; // Increase the score for each correct guess
       consecutiveCorrectGuesses++;
 
+      // Check if the threshold for increasing word length is reached
       if (consecutiveCorrectGuesses >= (wordLength ~/ 2)) {
-        survivalWordLength++;  // Increase the word length
-        consecutiveCorrectGuesses = 0;  // Reset consecutive correct guesses
+        survivalWordLength++; // Increase the word length
+        consecutiveCorrectGuesses = 0; // Reset consecutive correct guesses
 
-        // Reduce attempts with each word length increment, with a minimum of 3 attempts
+        // Reduce attempts with each word length increment, minimum of 3 attempts
         survivalAttempts = (survivalAttempts > 3) ? survivalAttempts - 1 : 3;
       }
 
-      // Update the current game settings to reflect the new survival values
+      // Update game settings with the new values
       wordLength = survivalWordLength;
       maxAttempts = survivalAttempts;
 
-      // Set a new word for the next level and reset the game state for the grid
-      _setNewSurvivalWord();  // Generate a new winning word based on the new word length
-      resetSurvivalGrid();  // Clear the board for the new level
+      // Generate a new word and reset the game grid
+      _setNewSurvivalWord(); // Generate a new winning word based on the new word length
+      resetSurvivalGrid(); // Clear the board for the new level
 
       // Log the updated settings to confirm
       print("New word length: $wordLength, New attempts: $maxAttempts, New winning word: $winningWord");
-      notifyListeners();  // Notify UI to update with the new values
+
+      // Notify UI to update with the new values
+      notifyListeners();
     } else {
       print("Not in Survival Mode");
     }
   }
+
   // Helper method to reset the grid state in Survival Mode
   void resetSurvivalGrid() {
     print("Resetting grid state for new level in Survival Mode");
@@ -253,14 +302,18 @@ class Observer extends ChangeNotifier {
     currentRow++;
     if (currentRow >= maxAttempts) {
       hasLost = true; // Mark as lost if attempts are exhausted
-      if (isDuelMode) {
-        _proceedToNextTurn(); // Handle next turn in Duel Mode
-      }
     }
   }
 
-  /* -----------------------------------------------------------------------------------  */
-  /* Dual Mode  */
+  /* ----------------------------------------------------------------------------------- */
+/* Dual Mode */
+
+  /// Initializes Duel Mode with the specified settings.
+  ///
+  /// Parameters:
+  /// - [rounds]: Total number of rounds in the duel.
+  /// - [attempts]: Maximum attempts allowed per round.
+  /// - [wordLength]: Length of the word to guess in each round.
   void startDuelMode({required int rounds, required int attempts, required int wordLength}) {
     print("Starting Duel Mode with $rounds rounds, $attempts attempts, and word length of $wordLength");
 
@@ -272,6 +325,7 @@ class Observer extends ChangeNotifier {
     player2Score = 0;
     currentRound = 1;
     isPlayer1Turn = true;
+    isSettingSecretWord = true; // Ensure the first step is to set a word
 
     // Ensure words are null initially to avoid confusion
     player1SecretWord = null;
@@ -279,32 +333,10 @@ class Observer extends ChangeNotifier {
 
     resetGameForNextTurn();
   }
-  // Update score for the current player
-  void _updateScore() {
-    if (isPlayer1Turn) {
-      player1Score++;
-    } else {
-      player2Score++;
-    }
-  }
 
-  // Proceed to the next turn in Duel Mode
-  void _proceedToNextTurn() {
-    _updateScore();
-
-    if (currentRound < totalRounds) {
-      if (!isPlayer1Turn) {
-        currentRound++;
-      }
-      isPlayer1Turn = !isPlayer1Turn;  // Alternate turns
-      resetGameForNextTurn();
-    } else {
-      print("Duel Mode ended. Player 1 Score: $player1Score, Player 2 Score: $player2Score");
-      isDuelMode = false; // End Duel Mode
-      notifyListeners();  // Notify to handle end game UI update
-    }
-  }
-
+  /// Resets the game state for the next turn in Duel Mode.
+  ///
+  /// Clears the board, resets flags, and prepares the game for the next turn.
   void resetGameForNextTurn() {
     currentNode = 0;
     currentRow = 0;
@@ -314,6 +346,11 @@ class Observer extends ChangeNotifier {
     loading = false; // No need to load a new word in Duel Mode
     notifyListeners();
   }
+
+  /// Sets the secret word for the opponent in Duel Mode.
+  ///
+  /// Parameters:
+  /// - [word]: The word set by the current player for their opponent.
   void setSecretWordForOpponent(String word) {
     if (isPlayer1Turn) {
       player2SecretWord = word; // Player 1 sets the word for Player 2
@@ -322,45 +359,21 @@ class Observer extends ChangeNotifier {
       player1SecretWord = word; // Player 2 sets the word for Player 1
       print("Player 2 set secret word for Player 1: $player1SecretWord");
     }
-    isSettingSecretWord = false; // Toggle off after setting the word
+    // Reset the flag only after the word has been set
+    isSettingSecretWord = false;
     notifyListeners();
   }
 
-
-  void submitGuess(String guess) {
-    if (isPlayer1Turn) {
-      // Evaluate Player 2's secret word
-      bool correct = evaluateGuess(player2SecretWord!, guess);
-      if (correct) {
-        player1Score++;
-        print("Player 1 guessed correctly!");
-      }
-    } else {
-      // Evaluate Player 1's secret word
-      bool correct = evaluateGuess(player1SecretWord!, guess);
-      if (correct) {
-        player2Score++;
-        print("Player 2 guessed correctly!");
-      }
-    }
-    _proceedToNextTurn();
-    notifyListeners();
-  }
-
-
-  void switchTurn() {
-    isPlayer1Turn = !isPlayer1Turn;
-    if (!isPlayer1Turn) currentRound++;
-  }
-
-  bool evaluateGuess(String secretWord, String guess) {
-    return secretWord == guess;
-  }
-
+  /// Checks if the Duel Mode game is over.
+  ///
+  /// Returns `true` if the current round exceeds the total number of rounds; otherwise, `false`.
   bool isGameOver() {
     return currentRound > totalRounds;
   }
-
+  /// Handles the transition to the next turn in Duel Mode.
+  ///
+  /// Checks the results of the current round, updates scores, and alternates turns.
+  /// Resets the game state for the next turn if the game is not over.
   void transitionToNextTurn() {
     if (!isPlayer1Turn) {
       // Check round results when both players have taken their turns
@@ -372,8 +385,6 @@ class Observer extends ChangeNotifier {
       } else {
         final winner = isPlayer1GuessedCorrectly ? "Player 1" : "Player 2";
         print("$winner wins this round.");
-        if (isPlayer1GuessedCorrectly) player1Score++;
-        if (isPlayer2GuessedCorrectly) player2Score++;
       }
 
       // Reset round results for the next round
@@ -392,13 +403,13 @@ class Observer extends ChangeNotifier {
     isPlayer1Turn = !isPlayer1Turn;
     isSettingSecretWord = true; // Prompt the next player to set the secret word
 
-    // Reset the state for the next turn
-    resetGameForNextTurn();
-
+    resetGameForNextTurn(); // Reset the state for the next turn
     notifyListeners();
   }
-
-
+  /// Checks the player's guess against the opponent's secret word.
+  ///
+  /// Evaluates the guessed word and marks it as correct or incorrect.
+  /// Proceeds to the next turn if the maximum attempts are reached or the word is guessed.
   void _checkGuessDuel() {
     final guessedWord = letterTaped
         .skip(currentRow * wordLength)
@@ -418,23 +429,78 @@ class Observer extends ChangeNotifier {
 
     if (guessedWord == targetWord) {
       print("Word guessed correctly in Duel Mode!");
-      _markWin(targetWord); // Mark as win
-      if (isPlayer1Turn) {
-        isPlayer1GuessedCorrectly = true;
-      } else {
-        isPlayer2GuessedCorrectly = true;
-      }
-      transitionToNextTurn(); // Move to the next turn
+      _markCorrectForDuel(targetWord); // Handle correct guess
     } else {
       print("Incorrect guess in Duel Mode: $guessedWord");
-      _markIncorrect(guessedWord, targetWord); // Mark incorrect letters
-      if (currentRow >= maxAttempts) {
-        transitionToNextTurn(); // Proceed to the next turn if out of attempts
+      _markIncorrectForDuel(guessedWord, targetWord);
+
+      // Check if the player has more attempts
+      if (currentRow < maxAttempts) {
+        print("Player still has attempts remaining. Let them guess again.");
       }
     }
 
     notifyListeners(); // Notify UI of changes
   }
+  void _markCorrectForDuel(String targetWord) {
+    // Highlight correct letters in the UI
+    for (int i = 0; i < targetWord.length; i++) {
+      final index = currentRow * wordLength + i;
+      letterTaped[index].status = LetterState.correct; // Mark all letters as correct
+    }
+
+    if (isPlayer1Turn) {
+      player1Score++; // Increment Player 1's score
+      print("Player 1 guessed correctly. Score: $player1Score");
+      isPlayer1GuessedCorrectly = true;
+    } else {
+      player2Score++; // Increment Player 2's score
+      print("Player 2 guessed correctly. Score: $player2Score");
+      isPlayer2GuessedCorrectly = true;
+    }
+
+    hasWon = true; // Mark this turn as a win
+    transitionToNextTurn(); // Move to the next turn
+    notifyListeners(); // Update the UI
+  }
+  void _markIncorrectForDuel(String guessedWord, String targetWord) {
+    // Highlight incorrect or partially correct letters in the UI
+    for (int i = 0; i < guessedWord.length; i++) {
+      final guessedLetter = guessedWord[i];
+      final index = currentRow * wordLength + i;
+
+      // Check if the guessed letter is in the target word
+      if (targetWord.contains(guessedLetter)) {
+        letterTaped[index].status = guessedLetter == targetWord[i]
+            ? LetterState.correct // Correct letter and position
+            : LetterState.contains; // Correct letter but wrong position
+      } else {
+        letterTaped[index].status = LetterState.incorrect; // Letter not in the word
+      }
+    }
+
+    currentRow++; // Move to the next row for the player's next guess
+
+    if (currentRow >= maxAttempts) {
+      // Player used all attempts; transition to the next turn
+      if (isPlayer1Turn) {
+        isPlayer1GuessedCorrectly = false;
+        print("Player 1 failed to guess the word.");
+      } else {
+        isPlayer2GuessedCorrectly = false;
+        print("Player 2 failed to guess the word.");
+      }
+
+      hasLost = true; // Mark the turn as a loss
+      transitionToNextTurn(); // Move to the next turn
+    } else {
+      print("Player still has attempts remaining. Let them guess again.");
+    }
+
+    notifyListeners(); // Update the UI
+  }
+
+
 
 
 
@@ -485,6 +551,22 @@ class Observer extends ChangeNotifier {
 
     return totalPercentage / games.length;
   }
+  Future<int> get totalWins async {
+    final games = await _partieDAO.getParties();
+    return games.where((partie) => partie.attempts <= maxAttempts).length; // Won in allowed attempts
+  }
+
+  Future<int> get totalLosses async {
+    final games = await _partieDAO.getParties();
+    final wonGames = games.where((partie) => partie.attempts <= maxAttempts).length;
+    return games.length - wonGames; // Losses = total games - wins
+  }
+
+  Future<List<PartieEntity>> getFilteredGames({required String mode}) async {
+    final games = await _partieDAO.getParties();
+    return games.where((partie) => partie.gameMode == mode).toList(); // Filter by mode
+  }
+
 
 
 

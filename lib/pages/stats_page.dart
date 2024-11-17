@@ -46,53 +46,85 @@ class StatsPage extends StatelessWidget {
                     return FutureBuilder<double>(
                       future: observer.averageAttempts, // Fetch average attempts
                       builder: (context, avgSnapshot) {
-                        if (totalSnapshot.connectionState == ConnectionState.waiting ||
-                            winSnapshot.connectionState == ConnectionState.waiting ||
-                            avgSnapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
-                        }
+                        return FutureBuilder<int>(
+                          future: observer.totalWins, // Fetch total wins
+                          builder: (context, winTotalSnapshot) {
+                            return FutureBuilder<int>(
+                              future: observer.totalLosses, // Fetch total losses
+                              builder: (context, lossTotalSnapshot) {
+                                if (totalSnapshot.connectionState == ConnectionState.waiting ||
+                                    winSnapshot.connectionState == ConnectionState.waiting ||
+                                    avgSnapshot.connectionState == ConnectionState.waiting ||
+                                    winTotalSnapshot.connectionState == ConnectionState.waiting ||
+                                    lossTotalSnapshot.connectionState == ConnectionState.waiting) {
+                                  return const Center(child: CircularProgressIndicator());
+                                }
 
-                        if (totalSnapshot.hasError || winSnapshot.hasError || avgSnapshot.hasError) {
-                          return Center(
-                            child: const Text(
-                              'Error loading statistics',
-                              style: TextStyle(
-                                fontFamily: 'Raleway',
-                                fontSize: 16,
-                                color: Color(0xFF6B8E23), // Olive Green
-                              ),
-                            ),
-                          );
-                        }
+                                if (totalSnapshot.hasError ||
+                                    winSnapshot.hasError ||
+                                    avgSnapshot.hasError ||
+                                    winTotalSnapshot.hasError ||
+                                    lossTotalSnapshot.hasError) {
+                                  return Center(
+                                    child: const Text(
+                                      'Error loading statistics',
+                                      style: TextStyle(
+                                        fontFamily: 'Raleway',
+                                        fontSize: 16,
+                                        color: Color(0xFF6B8E23), // Olive Green
+                                      ),
+                                    ),
+                                  );
+                                }
 
-                        final totalGames = totalSnapshot.data ?? 0;
-                        final winPercent = winSnapshot.data ?? 0.0;
-                        final avgAttempts = avgSnapshot.data ?? 0.0;
+                                final totalGames = totalSnapshot.data ?? 0;
+                                final winPercent = winSnapshot.data ?? 0.0;
+                                final avgAttempts = avgSnapshot.data ?? 0.0;
+                                final totalWins = winTotalSnapshot.data ?? 0;
+                                final totalLosses = lossTotalSnapshot.data ?? 0;
 
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _buildStatCard(
-                              icon: Icons.sports_esports,
-                              title: 'Total Games Played',
-                              value: '$totalGames',
-                              color: const Color(0xFF6B8E23),
-                            ),
-                            const SizedBox(height: 20),
-                            _buildStatCard(
-                              icon: Icons.emoji_events,
-                              title: 'Win Percentage',
-                              value: '${winPercent.toStringAsFixed(2)}%',
-                              color: const Color(0xFF6B8E23),
-                            ),
-                            const SizedBox(height: 20),
-                            _buildStatCard(
-                              icon: Icons.timeline,
-                              title: 'Average Attempts',
-                              value: '${avgAttempts.toStringAsFixed(2)}',
-                              color: const Color(0xFF6B8E23),
-                            ),
-                          ],
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    _buildStatCard(
+                                      icon: Icons.sports_esports,
+                                      title: 'Total Games Played',
+                                      value: '$totalGames',
+                                      color: const Color(0xFF6B8E23),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    _buildStatCard(
+                                      icon: Icons.emoji_events,
+                                      title: 'Win Percentage',
+                                      value: '${winPercent.toStringAsFixed(2)}%',
+                                      color: const Color(0xFF6B8E23),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    _buildStatCard(
+                                      icon: Icons.timeline,
+                                      title: 'Average Attempts',
+                                      value: '${avgAttempts.toStringAsFixed(2)}',
+                                      color: const Color(0xFF6B8E23),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    _buildStatCard(
+                                      icon: Icons.check_circle,
+                                      title: 'Total Games Won',
+                                      value: '$totalWins',
+                                      color: Colors.green, // Green for wins
+                                    ),
+                                    const SizedBox(height: 20),
+                                    _buildStatCard(
+                                      icon: Icons.cancel,
+                                      title: 'Total Games Lost',
+                                      value: '$totalLosses',
+                                      color: Colors.red, // Red for losses
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
                         );
                       },
                     );
@@ -124,7 +156,7 @@ class StatsPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.2), // Light olive green background for the icon
+                color: color.withOpacity(0.2), // Light background for the icon
                 shape: BoxShape.circle,
               ),
               child: Icon(

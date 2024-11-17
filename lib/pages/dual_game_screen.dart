@@ -4,23 +4,44 @@ import 'package:provider/provider.dart';
 import '../Observer.dart';
 import 'duel_partie_page.dart';
 
+/// The main gameplay screen for Duel mode in the Wordle game.
+///
+/// The `DualGameScreen` widget allows two players to compete in a turn-based game.
+/// It manages the gameplay rounds, secret word setting, and score tracking for both players.
+///
+/// Features:
+/// - Allows each player to set a secret word for their opponent.
+/// - Displays the gameplay grid and virtual keyboard for guessing.
+/// - Shows the game-over screen with scores and the winner.
+///
+/// Parameters:
+/// - [rounds]: Total number of rounds in the duel.
+/// - [attempts]: Maximum attempts per round.
+/// - [wordLength]: Length of the word to guess in each round.
 class DualGameScreen extends StatefulWidget {
+  /// Total number of rounds in the duel.
   final int rounds;
+
+  /// Maximum attempts per round.
   final int attempts;
+
+  /// Length of the word to guess in each round.
   final int wordLength;
 
+  /// Creates a `DualGameScreen` widget.
   const DualGameScreen({
-    Key? key,
+    super.key,
     required this.rounds,
     required this.attempts,
     required this.wordLength,
-  }) : super(key: key);
+  });
 
   @override
   _DualGameScreenState createState() => _DualGameScreenState();
 }
 
 class _DualGameScreenState extends State<DualGameScreen> {
+  /// Controller for managing the secret word input.
   final TextEditingController _secretWordController = TextEditingController();
 
   @override
@@ -32,6 +53,7 @@ class _DualGameScreenState extends State<DualGameScreen> {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
+      /// Provides the `Observer` state manager for game logic and UI updates.
       create: (_) => Observer(
         wordLength: widget.wordLength,
         maxAttempts: widget.attempts,
@@ -66,12 +88,12 @@ class _DualGameScreenState extends State<DualGameScreen> {
             ),
           ),
           child: Consumer<Observer>(
+            /// Dynamically updates the UI based on the game state.
             builder: (context, observer, child) {
               if (observer.isGameOver()) {
                 return _buildGameOverScreen(observer);
               }
 
-              // Show secret word input or guessing page based on the state
               return Column(
                 children: [
                   Padding(
@@ -87,6 +109,7 @@ class _DualGameScreenState extends State<DualGameScreen> {
                     ),
                   ),
                   Expanded(
+                    /// Displays either the secret word input screen or the guessing screen.
                     child: observer.isSettingSecretWord
                         ? _buildSecretWordInput(observer)
                         : DuelPartiePage(
@@ -105,6 +128,7 @@ class _DualGameScreenState extends State<DualGameScreen> {
     );
   }
 
+  /// Builds the UI for players to set a secret word for their opponent.
   Widget _buildSecretWordInput(Observer observer) {
     return Padding(
       padding: const EdgeInsets.all(20.0),
@@ -200,6 +224,7 @@ class _DualGameScreenState extends State<DualGameScreen> {
     );
   }
 
+  /// Builds the game-over screen showing the final scores and winner.
   Widget _buildGameOverScreen(Observer observer) {
     return Center(
       child: Column(
@@ -269,9 +294,10 @@ class _DualGameScreenState extends State<DualGameScreen> {
       ),
     );
   }
+
 }
 
-// Custom TextInputFormatter to convert input to uppercase
+/// A custom `TextInputFormatter` to convert input text to uppercase.
 class UpperCaseTextInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
