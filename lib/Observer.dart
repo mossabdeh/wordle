@@ -19,6 +19,7 @@ class Observer extends ChangeNotifier {
   int wordLength;
 
   // Survival Mode attributes
+  bool isHardMode = false; // Default to easy mode
   int survivalWordLength = 3;
   int survivalAttempts = 10;
   int consecutiveCorrectGuesses = 0;
@@ -62,24 +63,7 @@ class Observer extends ChangeNotifier {
 
  /* Survie Mode  */
 
-  void startDuelMode({required int rounds, required int attempts, required int wordLength}) {
-    print("Starting Duel Mode with $rounds rounds, $attempts attempts, and word length of $wordLength");
 
-    isDuelMode = true;
-    totalRounds = rounds;
-    maxAttempts = attempts;
-    this.wordLength = wordLength;
-    player1Score = 0;
-    player2Score = 0;
-    currentRound = 1;
-    isPlayer1Turn = true;
-
-    // Ensure words are null initially to avoid confusion
-    player1SecretWord = null;
-    player2SecretWord = null;
-
-    resetGameForNextTurn();
-  }
   void startSurvivalMode() {
     print("Starting Survival Mode");
     isSurvivalMode = true;
@@ -149,8 +133,8 @@ class Observer extends ChangeNotifier {
   }
 
 
-
-
+  /* -----------------------------------------------------------------------------------  */
+  /* Classic Mode  */
 
   // Set a new word for Classic Mode
   Future<void> _setWinningWord() async {
@@ -160,7 +144,6 @@ class Observer extends ChangeNotifier {
     loading = false;
     notifyListeners();
   }
-
 
   // Reset game based on the mode
   void resetGame() {
@@ -207,32 +190,6 @@ class Observer extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Update score for the current player
-  void _updateScore() {
-    if (isPlayer1Turn) {
-      player1Score++;
-    } else {
-      player2Score++;
-    }
-  }
-
-  // Proceed to the next turn in Duel Mode
-  void _proceedToNextTurn() {
-    _updateScore();
-
-    if (currentRound < totalRounds) {
-      if (!isPlayer1Turn) {
-        currentRound++;
-      }
-      isPlayer1Turn = !isPlayer1Turn;  // Alternate turns
-      resetGameForNextTurn();
-    } else {
-      print("Duel Mode ended. Player 1 Score: $player1Score, Player 2 Score: $player2Score");
-      isDuelMode = false; // End Duel Mode
-      notifyListeners();  // Notify to handle end game UI update
-    }
-  }
-
   // Check guess and determine win or loss
   void _checkGuess() {
     final guessedWord = letterTaped
@@ -268,22 +225,6 @@ class Observer extends ChangeNotifier {
 
     notifyListeners(); // Notify UI of changes
   }
-
-
-  void resetGameForNextTurn() {
-    currentNode = 0;
-    currentRow = 0;
-    letterTaped.clear();
-    hasWon = false;
-    hasLost = false;
-    loading = false; // No need to load a new word in Duel Mode
-    notifyListeners();
-  }
-
-
-
-
-
   // Mark win for both modes
   void _markWin(String targetWord) {
     for (int i = 0; i < targetWord.length; i++) {
@@ -292,9 +233,6 @@ class Observer extends ChangeNotifier {
     }
     hasWon = true; // Mark the game as won
   }
-
-
-
   // Mark incorrect guesses
   void _markIncorrect(String guessedWord, String targetWord) {
     for (int i = 0; i < guessedWord.length; i++) {
@@ -321,54 +259,61 @@ class Observer extends ChangeNotifier {
     }
   }
 
+  /* -----------------------------------------------------------------------------------  */
+  /* Dual Mode  */
+  void startDuelMode({required int rounds, required int attempts, required int wordLength}) {
+    print("Starting Duel Mode with $rounds rounds, $attempts attempts, and word length of $wordLength");
 
+    isDuelMode = true;
+    totalRounds = rounds;
+    maxAttempts = attempts;
+    this.wordLength = wordLength;
+    player1Score = 0;
+    player2Score = 0;
+    currentRound = 1;
+    isPlayer1Turn = true;
 
+    // Ensure words are null initially to avoid confusion
+    player1SecretWord = null;
+    player2SecretWord = null;
 
-  // Save completed game
-  Future<void> saveCompletedGame(bool won) async {
-    try {
-      final partie = PartieEntity(
-        secretWord: winningWord,
-        date: DateTime.now(),
-        attempts: currentRow,
-        guessedLetters: letterTaped.map((e) => e.char).join(),
-        gameMode: isSurvivalMode ? 'Survival' : isDuelMode ? 'Duel' : 'Classic',
-        wordLength: wordLength,
-      );
-
-      await _partieDAO.insertPartie(partie);
-    } catch (e) {
-      print('Error saving game: $e');
+    resetGameForNextTurn();
+  }
+  // Update score for the current player
+  void _updateScore() {
+    if (isPlayer1Turn) {
+      player1Score++;
+    } else {
+      player2Score++;
     }
   }
 
-  Future<List<PartieEntity>> getParties() async {
-    return await _partieDAO.getParties();
+  // Proceed to the next turn in Duel Mode
+  void _proceedToNextTurn() {
+    _updateScore();
+
+    if (currentRound < totalRounds) {
+      if (!isPlayer1Turn) {
+        currentRound++;
+      }
+      isPlayer1Turn = !isPlayer1Turn;  // Alternate turns
+      resetGameForNextTurn();
+    } else {
+      print("Duel Mode ended. Player 1 Score: $player1Score, Player 2 Score: $player2Score");
+      isDuelMode = false; // End Duel Mode
+      notifyListeners();  // Notify to handle end game UI update
+    }
   }
 
-  Future<int> get totalGamesPlayed async {
-    final games = await _partieDAO.getParties();
-    return games.length;
+  void resetGameForNextTurn() {
+    currentNode = 0;
+    currentRow = 0;
+    letterTaped.clear();
+    hasWon = false;
+    hasLost = false;
+    loading = false; // No need to load a new word in Duel Mode
+    notifyListeners();
   }
-
-  Future<double> get winPercentage async {
-    final games = await _partieDAO.getParties();
-    final wonGames = games.where((partie) => partie.attempts <= maxAttempts).length;
-    return (wonGames / games.length) * 100;
-  }
-
-  Future<double> get averageAttempts async {
-    final games = await _partieDAO.getParties();
-    if (games.isEmpty) return 0.0;
-
-    final totalPercentage = games.fold(0.0, (sum, partie) {
-      final attemptsPercentage = (partie.attempts / maxAttempts) * 100;
-      return sum + attemptsPercentage;
-    });
-
-    return totalPercentage / games.length;
-  }
-
   void setSecretWordForOpponent(String word) {
     if (isPlayer1Turn) {
       player2SecretWord = word; // Player 1 sets the word for Player 2
@@ -490,6 +435,58 @@ class Observer extends ChangeNotifier {
 
     notifyListeners(); // Notify UI of changes
   }
+
+
+
+  /* -----------------------------------------------------------------------------------  */
+  /* Save and Stats   */
+
+  // Save completed game
+  Future<void> saveCompletedGame(bool won) async {
+    try {
+      final partie = PartieEntity(
+        secretWord: winningWord,
+        date: DateTime.now(),
+        attempts: currentRow,
+        guessedLetters: letterTaped.map((e) => e.char).join(),
+        gameMode: isSurvivalMode ? 'Survival' : isDuelMode ? 'Duel' : 'Classic',
+        wordLength: wordLength,
+      );
+
+      await _partieDAO.insertPartie(partie);
+    } catch (e) {
+      print('Error saving game: $e');
+    }
+  }
+
+  Future<List<PartieEntity>> getParties() async {
+    return await _partieDAO.getParties();
+  }
+
+  Future<int> get totalGamesPlayed async {
+    final games = await _partieDAO.getParties();
+    return games.length;
+  }
+
+  Future<double> get winPercentage async {
+    final games = await _partieDAO.getParties();
+    final wonGames = games.where((partie) => partie.attempts <= maxAttempts).length;
+    return (wonGames / games.length) * 100;
+  }
+
+  Future<double> get averageAttempts async {
+    final games = await _partieDAO.getParties();
+    if (games.isEmpty) return 0.0;
+
+    final totalPercentage = games.fold(0.0, (sum, partie) {
+      final attemptsPercentage = (partie.attempts / maxAttempts) * 100;
+      return sum + attemptsPercentage;
+    });
+
+    return totalPercentage / games.length;
+  }
+
+
 
 
 

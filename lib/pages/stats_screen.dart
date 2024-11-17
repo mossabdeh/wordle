@@ -20,12 +20,88 @@ class _StatsScreenState extends State<StatsScreen> {
     _partiesFuture = PartieDAO().getParties(); // Fetch saved games on init
   }
 
-  List<String> formatGuessedLetters(String guessedLetters, int wordLength) {
-    List<String> attempts = [];
-    for (int i = 0; i < guessedLetters.length; i += wordLength) {
-      attempts.add(guessedLetters.substring(i, i + wordLength));
-    }
-    return attempts;
+  void _showGuessedLettersGrid(BuildContext context, List<String> guessedLetters, int wordLength) {
+    final gridSize = guessedLetters.length ~/ wordLength; // Calculate grid size
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          backgroundColor: const Color(0xFFFAF3E0), // Soft Cream
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "Guessed Letters",
+                  style: TextStyle(
+                    fontFamily: 'Raleway',
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: Color(0xFF6B8E23), // Olive Green
+                  ),
+                ),
+                const SizedBox(height: 16),
+                GridView.builder(
+                  shrinkWrap: true,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: wordLength, // Word length determines columns
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                  ),
+                  itemCount: guessedLetters.length,
+                  itemBuilder: (context, index) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE8F5E9), // Light Green
+                        border: Border.all(color: const Color(0xFF6B8E23)), // Olive Green
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: Text(
+                          guessedLetters[index],
+                          style: const TextStyle(
+                            fontFamily: 'Raleway',
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6B8E23), // Olive Green
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text(
+                    "Close",
+                    style: TextStyle(
+                      fontFamily: 'Raleway',
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -87,7 +163,9 @@ class _StatsScreenState extends State<StatsScreen> {
                       itemCount: paginatedParties.length,
                       itemBuilder: (context, index) {
                         final partie = paginatedParties[index];
-                        final attempts = formatGuessedLetters(partie.guessedLetters, partie.wordLength);
+                        final guessedLetters = partie.guessedLetters.split('');
+                        final wordLength = partie.wordLength;
+                        final attempts = partie.attempts + 1; // Adjust attempts
 
                         return Card(
                           margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -111,7 +189,7 @@ class _StatsScreenState extends State<StatsScreen> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  "Date: ${partie.date}",
+                                  "Date: ${partie.date.year}-${partie.date.month.toString().padLeft(2, '0')}-${partie.date.day.toString().padLeft(2, '0')} ${partie.date.hour.toString().padLeft(2, '0')}:${partie.date.minute.toString().padLeft(2, '0')}",
                                   style: const TextStyle(
                                     fontFamily: 'Raleway',
                                     fontSize: 16,
@@ -119,7 +197,15 @@ class _StatsScreenState extends State<StatsScreen> {
                                   ),
                                 ),
                                 Text(
-                                  "Attempts: ${partie.attempts}",
+                                  "Word Length: ${partie.wordLength}",
+                                  style: const TextStyle(
+                                    fontFamily: 'Raleway',
+                                    fontSize: 16,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                Text(
+                                  "Attempts: $attempts",
                                   style: const TextStyle(
                                     fontFamily: 'Raleway',
                                     fontSize: 16,
@@ -135,24 +221,26 @@ class _StatsScreenState extends State<StatsScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 8),
-                                const Text(
-                                  "Guessed Letters:",
-                                  style: TextStyle(
-                                    fontFamily: 'Raleway',
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF6B8E23),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF6B8E23),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                  ),
+                                  onPressed: () {
+                                    _showGuessedLettersGrid(context, guessedLetters, wordLength);
+                                  },
+                                  child: const Text(
+                                    "Visualize Game",
+                                    style: TextStyle(
+                                      fontFamily: 'Raleway',
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                ...attempts.map((attempt) => Text(
-                                  attempt,
-                                  style: const TextStyle(
-                                    fontFamily: 'Raleway',
-                                    fontSize: 14,
-                                    color: Colors.black54,
-                                  ),
-                                )),
                               ],
                             ),
                           ),
